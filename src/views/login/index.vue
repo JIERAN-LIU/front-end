@@ -70,7 +70,7 @@ import { login, forgetPassword } from '../../api'
 export default {
   name: "Login",
   data() {
-    const validatePassword = (rule, value, callback) => {
+    const validatePassword = (rule, value, callback) => { 
       if (value.length < 6) {
         callback(new Error("The password can not be less than 6 digits"));
       } else {
@@ -98,7 +98,7 @@ export default {
     };
   },
   created() {
-    // window.addEventListener('storage', this.afterQRScan)
+     window.addEventListener('storage', this.afterQRScan)
   },
   mounted() {
     if (this.loginForm.account === "") {
