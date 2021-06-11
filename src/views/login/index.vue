@@ -3,7 +3,7 @@
   <div class="login-container">
     
   </div>
-  <!--this is a test for the github-->
+  
   <el-form
       ref="loginForm"
       :model="loginForm"
@@ -13,7 +13,7 @@
       label-position="left"
     >
       <div class="title-container">
-        <h3 class="title">Welcome</h3>
+        <h3 class="title">Welcome to library</h3>
       </div>
 
       <el-form-item prop="account">
@@ -98,7 +98,7 @@ export default {
     };
   },
   created() {
-     window.addEventListener('storage', this.afterQRScan)
+    // window.addEventListener('storage', this.afterQRScan)
   },
   mounted() {
     if (this.loginForm.account === "") {
