@@ -49,8 +49,9 @@
           />
         </el-form-item>
       </el-tooltip>
+      <!--
       <p class="fp" @click="startFp">Forget password</p>
-
+      -->
       <el-button
         :loading="loading"
         type="primary"
@@ -147,7 +148,8 @@ export default {
         }
       });
     },
-    startFp () {
+      /*
+      startFp () {
       this.isFP = true;
       this.$refs.loginForm.clearValidate()
       this.$nextTick(() => {
@@ -172,6 +174,7 @@ export default {
         })
       })
     }
+    */
   },
 };
 </script>
