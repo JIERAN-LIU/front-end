@@ -144,7 +144,6 @@ export default {
 }
 .comment-wrapper {
   padding: 20px 10px; 
-  background: #f4f4f4;
 }
 .single-comment {
   color: #404040;

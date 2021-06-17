@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
 import router from '../router'
+import { getCookie } from '../utils/utils'
 
 // create an axios instance
 const request = axios.create({
@@ -8,7 +9,7 @@ const request = axios.create({
 })
 
 request.interceptors.request.use((config) => {
-	//比如是否需要设置 token
+  //比如是否需要设置 token
   // debugger
   if (config.url === '/user/login') {
     config.headers['Authorization'] = `Basic ${btoa(config.data.username + ':' + config.data.password)}`
@@ -16,13 +17,16 @@ request.interceptors.request.use((config) => {
     const auth = localStorage.getItem('Authorization')
     auth && (config.headers['Authorization'] = auth)
   }
-	
+
+  // Django SessionAuthentication need csrf token
+  config.headers['X-CSRFToken'] = getCookie('csrftoken')
+
   config.data && Object.keys(config.data).forEach((i => {
-    if (!config.data[i]) {
+    if (config.data[i] === undefined || config.data[i] === '') {
       delete config.data[i]
     }
   }))
-	return config
+  return config
 })
 
 // response interceptor
@@ -64,17 +68,26 @@ request.interceptors.response.use(
       })
     }
 
-    
+
     return res
   },
   ({ message, response }) => {
     console.log('err => ', message, response) // for debug
-    if (response && response.data && response.data.detail) {
-      Message({
-        message: response.data.detail,
-        type: 'error',
-        duration: 2 * 1000
-      })
+    if (response && response.data) {
+      try {
+        Message({
+          message: Object.keys(response.data).map(i => `${i}: ${response.data[i]}`).join('\n'),
+          type: 'error',
+          duration: 2 * 1000
+        })
+      } catch (error) {
+        Message({
+          message: JSON.stringify(response.data),
+          type: 'error',
+          duration: 2 * 1000
+        })
+      }
+
     } else {
       Message({
         message: message,
@@ -82,7 +95,7 @@ request.interceptors.response.use(
         duration: 2 * 1000
       })
     }
-    if (response && (response.status === 403 || response.status === 401)) {
+    if (response && response.status === 401) {
       localStorage.removeItem('user');
       router.push('/login')
     }
@@ -90,15 +103,7 @@ request.interceptors.response.use(
   }
 )
 
-export async function login(data){
-  await request({
-    url: '/',
-    method: 'get',
-    headers: {
-      accept: 'text/html'
-    },
-    data
-  })
+export async function login(data) {
   return request({
     url: '/user/login',
     method: 'post',
@@ -113,11 +118,52 @@ export function logout() {
   })
 }
 
-export function modifyPassword (params) {
+export function getUserPage (params) {
   return request({
-    url: '/api/user/pwd/modify',
-    method: 'post',
+    url: '/user/',
+    method: 'get',
     params
+  })
+}
+
+export function addUser (data) {
+  return request({
+    url: '/user/',
+    method: 'post',
+    data
+  })
+}
+
+export function editUser (data) {
+  const id = data.id
+  delete data.id
+  return request({
+    url: `/user/${id}/`,
+    method: 'put',
+    data
+  })
+}
+
+export function deleteUser (id) {
+  return request({
+    url: `/user/${id}/`,
+    method: 'delete'
+  })
+}
+
+export function resetUser (id) {
+  return request({
+    url: `/user/pwd`,
+    params: {id}
+  })
+}
+
+
+export function modifyPassword (data) {
+  return request({
+    url: '/user/pwd',
+    method: 'post',
+    data
   })
 }
 
@@ -129,7 +175,7 @@ export function forgetPassword (params) {
   })
 }
 
-export function getAuthorPage (params) {
+export function getAuthorPage(params) {
   return request({
     url: '/author/',
     method: 'get',
@@ -137,13 +183,13 @@ export function getAuthorPage (params) {
   })
 }
 
-export function getAuthorDetail (id) {
+export function getAuthorDetail(id) {
   return request({
     url: `/author/${id}/`
   })
 }
 
-export function addAuthor (data) {
+export function addAuthor(data) {
   return request({
     url: '/author/',
     method: 'post',
@@ -151,7 +197,7 @@ export function addAuthor (data) {
   })
 }
 
-export function editAuthor (data) {
+export function editAuthor(data) {
   const { id } = data
   delete data.id
   return request({
@@ -161,14 +207,14 @@ export function editAuthor (data) {
   })
 }
 
-export function deleteAuthor (id) {
+export function deleteAuthor(id) {
   return request({
     url: `/author/${id}/`,
     method: 'delete'
   })
 }
 
-export function getBookPage (params) {
+export function getBookPage(params) {
   return request({
     url: '/book/',
     method: 'get',
@@ -176,13 +222,13 @@ export function getBookPage (params) {
   })
 }
 
-export function getBookDetail (id) {
+export function getBookDetail(id) {
   return request({
     url: `/book/${id}/`
   })
 }
 
-export function addBook (data) {
+export function addBook(data) {
   return request({
     url: '/book/',
     method: 'post',
@@ -190,22 +236,24 @@ export function addBook (data) {
   })
 }
 
-export function editBook (data) {
+export function editBook(data) {
+  const id = data.id
+  delete data.id
   return request({
-    url: '/book/',
+    url: `/book/${id}/`,
     method: 'put',
     data
   })
 }
 
-export function deleteBook (id) {
+export function deleteBook(id) {
   return request({
     url: `/book/${id}/`,
     method: 'delete'
   })
 }
 
-export function getPublisherPage (params) {
+export function getPublisherPage(params) {
   return request({
     url: '/publisher/',
     method: 'get',
@@ -213,7 +261,7 @@ export function getPublisherPage (params) {
   })
 }
 
-export function addPublisher (data) {
+export function addPublisher(data) {
   return request({
     url: '/publisher/',
     method: 'post',
@@ -221,22 +269,24 @@ export function addPublisher (data) {
   })
 }
 
-export function editPublisher (data) {
+export function editPublisher(data) {
+  const id = data.id
+  delete data.id
   return request({
-    url: '/publisher/',
+    url: `/publisher/${id}/`,
     method: 'put',
     data
   })
 }
 
-export function deletePublisher (id) {
+export function deletePublisher(id) {
   return request({
     url: `/publisher/${id}/`,
     method: 'delete'
   })
 }
 
-export function getCollegePage (params) {
+export function getCollegePage(params) {
   return request({
     url: '/college/',
     method: 'get',
@@ -244,7 +294,7 @@ export function getCollegePage (params) {
   })
 }
 
-export function addCollege (data) {
+export function addCollege(data) {
   return request({
     url: '/college/',
     method: 'post',
@@ -252,29 +302,31 @@ export function addCollege (data) {
   })
 }
 
-export function editCollege (data) {
+export function editCollege(data) {
+  const id = data.id
+  delete data.id
   return request({
-    url: '/college/',
+    url: `/college/${id}/`,
     method: 'put',
     data
   })
 }
 
-export function deleteCollege (id) {
+export function deleteCollege(id) {
   return request({
     url: `/college/${id}/`,
     method: 'delete'
   })
 }
 
-export function getUserInfo (id) {
+export function getUserInfo(id) {
   return request({
     url: `/user/${id}/`,
     method: 'get'
   })
 }
 
-export function setUserInfo (data) {
+export function setUserInfo(data) {
   const { id } = data
   delete data.id
   return request({
@@ -284,34 +336,34 @@ export function setUserInfo (data) {
   })
 }
 
-export function getRecommend () {
+export function getRecommend() {
   return request({
     url: `/book-recommend/`
   })
 }
 
-export function bookSearch (params) {
+export function bookSearch(params) {
   return request({
     url: '/book-search/',
     params
   })
 }
 
-export function getDictionary () {
+export function getDictionary() {
   return request({
     url: '/dict/'
   })
 }
 
 
-export function getComment (params) {
+export function getComment(params) {
   return request({
     url: '/comment/',
     params
   })
 }
 
-export function deleteComment (id) {
+export function deleteComment(id) {
   return request({
     url: `/comment/${id}/`,
     method: 'delete'
@@ -320,21 +372,21 @@ export function deleteComment (id) {
 
 
 
-export function getBorrowList (params) {
+export function getBorrowList(params) {
   return request({
     url: '/borrow/',
     params
   })
 }
 
-export function returnBook (id) {
+export function returnBook(id) {
   return request({
     url: `/return/${id}/`,
     method: 'put'
   })
 }
 
-export function borrowBook (data) {
+export function borrowBook(data) {
   return request({
     url: '/borrow/',
     method: 'post',
@@ -342,7 +394,7 @@ export function borrowBook (data) {
   })
 }
 
-export function comment (data) {
+export function comment(data) {
   return request({
     url: '/comment/',
     data,
@@ -350,14 +402,14 @@ export function comment (data) {
   })
 }
 
-export function renew (id) {
+export function renew(id) {
   return request({
     url: `/renew/${id}/`,
     method: 'put'
   })
 }
 
-export function createCopy (data) {
+export function createCopy(data) {
   return request({
     url: '/copy/',
     method: 'post',
@@ -365,16 +417,9 @@ export function createCopy (data) {
   })
 }
 
-export function getCopyPage (params) {
+export function getCopyPage(params) {
   return request({
     url: '/copy/',
-    params
-  })
-}
-
-export function getUserPage (params) {
-  return request({
-    url: '/user/',
     params
   })
 }

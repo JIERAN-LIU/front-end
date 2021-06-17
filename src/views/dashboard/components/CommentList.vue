@@ -1,4 +1,3 @@
-<!--now this is a test for the whole project, until now can not show up still testing-->
 <template>
   <div v-loading="loading" class="comment-list-warpper">
     <h3 class="comment-title">Comment History</h3>
@@ -10,7 +9,7 @@
         :timestamp="timeFormat(item.created_at)">
         <div>
           <el-card class="">
-            <h4><router-link :to="'/book-detail/' + item.book_info.id">{{item.book_info.title}}</router-link></h4>
+            <h4><router-link :to="'./book-detail/' + item.book_info.id">{{item.book_info.title}}</router-link></h4>
             <p class="content">{{item.content}}</p>
             <p class="handler-wrapper" >
               <span>Rating:  <span class="score">{{item.rating}}</span></span>

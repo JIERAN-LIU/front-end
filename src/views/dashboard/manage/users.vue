@@ -9,19 +9,15 @@
       />
     </div>
 
-    <div>
-      <AuthorItem v-for="i in tableData" @showDetail="showDetail(i)" @onEdit="handleEdit(i)" @onDelete="handleDelete(i)" :author="i" :key="i.id"/>
-    </div>
-
-    <!-- <el-table :data="tableData" style="width: 100%">
-
+    <el-table :data="tableData" style="width: 100%">
       <el-table-column :label="i.label" :prop="i.prop" v-for="i in formModal" :key="i.prop">
         <template slot-scope="scope">
           <img v-if="i.prop === 'avatar'" style="max-width: 200px;max-height: 200px" :src="scope.row.avatar" alt="">
+          <span v-if="i.prop === 'college'" >{{scope.row.college_info.name}}</span>
           <span v-else>{{scope.row[i.prop]}}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Handle" width="300px">
+      <el-table-column label="Handle" width="400px">
         <template slot-scope="scope">
           <el-button size="mini" @click="handleEdit(scope.row)"
             >EDIT</el-button
@@ -35,10 +31,19 @@
           >
             <el-button slot="reference" size="mini" type="danger">DELETE</el-button>
           </el-popconfirm>
+          <el-popconfirm
+            title="confirm to reset password?"
+            confirm-button-text='OK'
+            cancel-button-text='NO'
+            style="margin-left: 10px"
+            @confirm="handleReset(scope.row)"
+          >
+            <el-button slot="reference" size="mini" type="warning">RESER PASSWORD</el-button>
+          </el-popconfirm>
         </template>
       </el-table-column>
-    </el-table> -->
-    <!-- <p class="page-wrapper">
+    </el-table>
+    <p class="page-wrapper">
       <el-pagination
         background
         layout="prev, pager, next"
@@ -46,100 +51,80 @@
         :total="total"
       >
       </el-pagination>
-    </p> -->
-
-    <AuthorDetailModal :author="activeAuthor" :showInfo.sync="detailShow" />
-
+    </p>
   </div>
 </template>
 
 <script>
-import { getAuthorPage, addAuthor, editAuthor, deleteAuthor } from "@api";
-import { mapGetters } from 'vuex'
+import { getUserPage, addUser, editUser, deleteUser, resetUser, getCollegePage } from "@api";
 import AddModal from "@c/AddModal.vue";
-import AuthorItem from "@c/AuthorItem.vue"
-import AuthorDetailModal from "@c/AuthorDetailModal.vue"
+import { mapGetters } from 'vuex'
+import { ADMIN, LIBRARIAN, READER } from '../../../constant'
 export default {
   name: "author",
-  components: { AddModal, AuthorItem, AuthorDetailModal },
+  components: { AddModal },
   data() {
     return {
       tableData: [],
       total: 0,
-      activeAuthor: null,
-      detailShow: false,
-      promotionPrice: ''
+      promotionPrice: '',
+      collegeOptions: [],
+      activeUser: {}
     };
   },
   computed: {
-    ...mapGetters(['getNationsOptions', 'getGendersOptions']),
-    formModal() {
+    ...mapGetters(['getIdentity']),
+    getRoleOptions() {
+      if (this.getIdentity === ADMIN) {
+        return [{ value: LIBRARIAN, label: LIBRARIAN }]
+      } else if (this.getIdentity === LIBRARIAN) {
+        return [{ value: READER, label: READER }]
+      }
+      return []
+    },
+    formModal () {
       return [
         {
           label: 'Name',
-          prop: 'name',
+          prop: 'username',
           rules: [
             { required: true, trigger: "blur" }
           ],
           type: 'input'
         },
         {
-          label: 'Gender',
-          prop: 'gender',
+          label: 'Role',
+          prop: 'role',
           rules: [
-            { required: true, trigger: "blur" }
+            { required: true, trigger: "change" }
           ],
           type: 'select',
           attrs: {
-            options: this.getGendersOptions
+            options: this.getRoleOptions
           }
         },
         {
-          label: 'Alias',
-          prop: 'alias',
-          rules: [],
+          label: 'Email',
+          prop: 'email',
+          rules: [
+            { required: true, trigger: "blur" }
+          ],
           type: 'input'
         },
         {
-          label: 'Nation',
-          prop: 'nation',
-          rules: [
-            { required: true, trigger: 'blur' }
-          ],
+          label: 'College',
+          prop: 'college',
           type: 'select',
           attrs: {
-            options: this.getNationsOptions
+            options: this.collegeOptions,
+            multiple: false,
+            remote: this.getCollegeList
           }
         },
         {
-          label: 'Avatar',
-          prop: 'avatar',
-          rules: [
-            { required: true, trigger: "blur" }
-          ],
+          label: 'Student Id',
+          prop: 'student_id',
           type: 'input'
-        },
-        {
-          label: 'Profile',
-          prop: 'profile',
-          rules: [
-            { required: true, trigger: "blur" }
-          ],
-          type: 'input'
-        },
-        {
-          label: 'Birthday',
-          prop: 'birthday',
-          rules: [
-            { required: true, trigger: "blur" }
-          ],
-          type: 'datePicker'
-        },
-        {
-          label: 'Died At',
-          prop: 'died_at',
-          rules: [],
-          type: 'datePicker'
         }
       ]
     }
@@ -152,17 +137,17 @@ export default {
   destroyed() {},
   methods: {
     addEvent(data) {
-      addAuthor(data).then(() => {
+      addUser(data).then(() => {
         this.refreshTable();
       });
     },
     editEvent (data) {
-      editAuthor(data).then(() => {
+      editUser(data).then(() => {
         this.refreshTable();
       });
     },
     refreshTable(pageNum = 1) {
-      getAuthorPage({
+      getUserPage({
         page: pageNum,
       }).then((res) => {
         const { count: total, results: list } = res;
@@ -171,17 +156,34 @@ export default {
       });
     },
     handleDelete(row) {
-      deleteAuthor(row.id).then(() => {
+      deleteUser(row.id).then(() => {
         this.refreshTable()
       })
     },
     handleEdit (row) {
       this.$refs.modal.edit({...row})
+      this.activeUser = row
     },
-    showDetail (a) {
-      this.activeAuthor = a
-      this.detailShow = true
-    }
+    handleReset (row) {
+      resetUser(row.id).then(() => {
+        this.$message.success('success!')
+        this.refreshTable()
+      })
+    },
+    async getCollegeList (k) {
+      const res = await getCollegePage({
+        page: 1,
+        keywords: k
+      })
+      if (!k && this.activeUser.college_info && this.activeUser.college_info.id) {
+        const exist = res.results.find(i => i.id === this.activeUser.college_info.id)
+        !exist && res.results.unshift(this.activeUser.college_info)
+      }
+      this.collegeOptions = res.results.map(i => ({
+        value: i.id,
+        label: i.name
+      }))
+    },
   },
 };
 </script>

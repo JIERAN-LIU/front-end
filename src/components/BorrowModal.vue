@@ -1,12 +1,13 @@
 <template>
   <el-dialog
-    title="Add Copy"
+    title="Borrow"
     destroy-on-close
     append-to-body
     width="60%"
+    @closed="successCbs = []"
     :visible.sync="showModal"
   >
-    <el-table style="width: 100%" :data="this.copies">
+    <el-table style="width: 100%" :data="this.copies" v-loading="loading">
       <el-table-column
         prop="status"
         label="status"
@@ -35,7 +36,6 @@
     </el-table>
     <span slot="footer" class="dialog-footer">
       <el-button @click="showModal = false">Cancel</el-button>
-      <el-button type="primary" @click="ok">OK</el-button>
     </span>
   </el-dialog>
 </template>
@@ -48,8 +48,9 @@ export default {
     return {
       showModal: false,
       id: null,
-      book: null,
-      copies: []
+      copies: [],
+      successCbs: [],
+      loading: false
     };
   },
   props: {
@@ -63,27 +64,21 @@ export default {
   },
 
   methods: {
-    show (id) {
+    show (id, cbs = []) {
       this.id = id
       this.fetchBookDetail()
       this.showModal = true
+      this.successCbs.push(...cbs)
     },
     fetchBookDetail () {
       this.loading = true
-      Promise.all([
-        getBookDetail(this.id),
-        getCopyPage({
-          book: this.id
-        }),
-      ]).then(([res1, res2]) => {
-        this.book = res1
-        this.copies = res2.results
+      getCopyPage({
+        book: this.id
+      }).then(res => {
+        this.copies = res.results
       }).finally(() => {
         this.loading = false
       })
-    },
-    ok () {
-
     },
     borrowBook (row) {
       borrowBook({
@@ -92,6 +87,7 @@ export default {
         reader: this.currentBorrower.id
       }).finally(() => {
         this.fetchBookDetail()
+        this.successCbs.map(i => i())
       })
     }
   },

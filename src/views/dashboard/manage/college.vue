@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div>
+    <div class="work-bench">
       <AddModal
         :formModal="formModal"
         @addEvent="addEvent"
@@ -11,8 +11,8 @@
 
     <el-table :data="tableData" style="width: 100%">
       <el-table-column :label="i.label" :prop="i.prop" v-for="i in formModal" :key="i.prop">
-        <template v-if="i.prop === 'avatar'" slot-scope="scope">
-          <img style="max-width: 200px;max-height: 200px" :src="scope.row.cover" alt="">
+        <template slot-scope="scope">
+          <span>{{scope.row[i.prop]}}</span>
         </template>
       </el-table-column>
       <el-table-column label="Handle" width="300px">
@@ -59,30 +59,6 @@ export default {
         {
           label: 'Name',
           prop: 'name',
-          rules: [
-            { required: true, trigger: "blur" }
-          ],
-          type: 'input'
-        },
-        {
-          label: 'Email',
-          prop: 'email',
-          rules: [
-            { required: true, trigger: "blur" }
-          ],
-          type: 'input'
-        },
-        {
-          label: 'Logo',
-          prop: 'logo',
-          rules: [
-            { required: true, trigger: "blur" }
-          ],
-          type: 'input'
-        },
-        {
-          label: 'Site',
-          prop: 'site',
           rules: [
             { required: true, trigger: "blur" }
           ],
@@ -135,5 +111,8 @@ export default {
 .page-wrapper {
   text-align: right;
   margin: 10px;
+}
+.work-bench {
+  padding: 10px;
 }
 </style>

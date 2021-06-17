@@ -1,7 +1,7 @@
 <template>
   <div class="container">
 
-    <div class="nav-wrap nav">
+    <div class="nav-wrap nav" :class="{'fixed': isReader}">
       <div class="nav-primary">
         <div class="nav-logo">
         </div>
@@ -13,7 +13,7 @@
       </div>
     </div>
 
-    <div class="work-banch">
+    <div class="work-banch" v-if="!isReader">
       <AddModal
         :formModal="formModal"
         flex
@@ -23,29 +23,32 @@
       >
         <CopyBookForm ref="copyForm"></CopyBookForm>
       </AddModal>
-      <SelectBorrowPeople @selectedBorrower="onSelectedBorrower" />
     </div>
     <div>
+    </div>
+    <div :class="{'fixed-book': isReader}" class="content-wrapper">
+      <div class="book-info-wrapper" :class="{'is-reader': isReader}">
+        <BookItem class="item" v-for="i in tableData" @showDetail="showDetail(i)" @onEdit="handleEdit(i)" @onDelete="handleDelete(i)" :book="i" :key="i.id" />
+      </div>
+      <div v-if="isReader" class="rec-info-wrapper">
+        <h2 class="title-l">Books You May Interred In:</h2>
+        <RecBook v-for="book in recommendList" :key="book.id" :book="book"/>
+      </div>
+    </div>
 
-    </div>
-    <div>
-      <BookItem class="item" v-for="i in tableData" @onBorrow="onBorrow(i)" @showDetail="showDetail(i)" @onEdit="handleEdit(i)" @onDelete="handleDelete(i)" :book="i" :key="i.id" />
-    </div>
-    <BorrowModal :currentBorrower="currentBorrower" ref="borrowModal" />
   </div>
 </template>
 
 <script>
-import { getBookPage, addBook, editBook, deleteBook, getAuthorPage, getPublisherPage, bookSearch } from '@api'
+import { getBookPage, addBook, editBook, deleteBook, getAuthorPage, getPublisherPage, getCopyPage, getRecommend } from '@api'
 import { mapGetters } from 'vuex'
 import BookItem from '@c/BookItem.vue'
 import AddModal from '@c/AddModal.vue'
 import CopyBookForm from '@c/CopyBookForm.vue'
-import SelectBorrowPeople from '@c/SelectBorrowPeople'
-import BorrowModal from '@c/BorrowModal'
+import RecBook from '@c/RecBook.vue'
 export default {
   name: "book",
-  components: { AddModal, BookItem, CopyBookForm, SelectBorrowPeople, BorrowModal },
+  components: { AddModal, BookItem, CopyBookForm, RecBook },
   data() {
     return {
       tableData: [],
@@ -54,11 +57,12 @@ export default {
       promotionPrice: '',
       authorOptions: [],
       publisherOptions: [],
-      currentBorrower: null
+      activeBook: {},
+      recommendList: []
     };
   },
   computed: {
-    ...mapGetters(['getBindingsOptions', 'getSubjectsOptions', 'getLanguages']),
+    ...mapGetters(['getBindingsOptions', 'getSubjectsOptions', 'getLanguages', 'isReader']),
     formModal () {
       return [
         {
@@ -204,7 +208,9 @@ export default {
   watch: {},
   created() {
     this.refreshTable();
-    console.log(this, '000')
+    if (this.isReader) {
+      this.getRecommend()
+    }
   },
   mounted() {},
   destroyed() {},
@@ -223,9 +229,10 @@ export default {
         this.refreshTable();
       });
     },
-    refreshTable(pageNum = 1) {
+    refreshTable(pageNum = 1, title='') {
       getBookPage({
         page: pageNum,
+        title
       }).then((res) => {
         const { count: total, results: list } = res;
         this.total = total;
@@ -238,7 +245,23 @@ export default {
       })
     },
     handleEdit (row) {
-      this.$refs.modal.edit({...row})
+      const info = {}
+      this.formModal.map(i => {
+        info[i.prop] = row[i.prop]
+      })
+      info.publisher = row.publisher_info.id
+      info.authors = row.authors_info.map(i => i.id)
+      info.id = row.id
+      this.activeBook = row
+      this.$refs.modal.edit(info, [() => {
+        this.activeBook = {}
+      }])
+      getCopyPage({
+        book: row.id
+      }).then(res => {
+        this.$refs.copyForm.setCopy(res.results)
+      })
+      
     },
     showDetail () {
 
@@ -248,6 +271,10 @@ export default {
         page: 1,
         name: k
       })
+      if (!k && this.activeBook.authors_info) {
+        res.results = res.results.filter(i => !this.activeBook.authors_info.find(j => j.id === i.id))
+        res.results.unshift(...this.activeBook.authors_info)
+      }
       this.authorOptions = res.results.map(i => ({
         value: i.id,
         label: i.name
@@ -258,28 +285,23 @@ export default {
         page: 1,
         keywords: k
       })
+      if (!k && this.activeBook.publisher_info) {
+        const exist = res.results.find(i => i.id === this.activeBook.publisher_info.id)
+        !exist && res.results.unshift(this.activeBook.publisher_info)
+      }
       this.publisherOptions = res.results.map(i => ({
         value: i.id,
         label: i.name
       }))
     },
     async searchBook () {
-      const res = await bookSearch({
-        q: this.key
+      this.refreshTable(1, this.key)
+    },
+    getRecommend () {
+      getRecommend().then(res => {
+        this.recommendList = res.results
       })
-      this.tableData = res.results;
     },
-    async getAuthorPage () {
-
-    },
-    onSelectedBorrower (user) {
-      this.currentBorrower = user
-    },
-    onBorrow (i) {
-      if (this.currentBorrower) {
-        this.$refs.borrowModal.show(i.id)
-      }
-    }
   },
 };
 </script>
@@ -318,5 +340,32 @@ export default {
 }
 .work-banch {
   padding: 10px;
+}
+.fixed {
+  position: absolute;
+  width: 100vw;
+  left: 0;
+  top: 50px;
+}
+.fixed-book {
+  margin-top: 90px;
+}
+.content-wrapper {
+  display: flex;
+}
+.book-info-wrapper {
+  flex: 1;
+}
+.title-l {
+  /* width: 100%; */
+  padding-left: 10px;
+}
+.rec-info-wrapper {
+  width: 350px;
+  display: flex;
+  margin-left: 10px;
+  flex-wrap: wrap;
+  align-self: baseline;
+  justify-content: space-between;
 }
 </style>

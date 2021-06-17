@@ -3,7 +3,6 @@
   <div class="login-container">
     
   </div>
-  
   <el-form
       ref="loginForm"
       :model="loginForm"
@@ -13,8 +12,9 @@
       label-position="left"
     >
       <div class="title-container">
-        <h3 class="title">Welcome to library</h3>
+        <h3 class="title">Welcome</h3>
       </div>
+
       <el-form-item prop="account">
         <el-input
           ref="account"
@@ -49,9 +49,8 @@
           />
         </el-form-item>
       </el-tooltip>
-      <!--
       <p class="fp" @click="startFp">Forget password</p>
-      -->
+
       <el-button
         :loading="loading"
         type="primary"
@@ -70,7 +69,7 @@ import { login, forgetPassword } from '../../api'
 export default {
   name: "Login",
   data() {
-    const validatePassword = (rule, value, callback) => { 
+    const validatePassword = (rule, value, callback) => {
       if (value.length < 6) {
         callback(new Error("The password can not be less than 6 digits"));
       } else {
@@ -134,6 +133,7 @@ export default {
               }
               localStorage.setItem('user', JSON.stringify(res))
               localStorage.setItem('Authorization', `Basic ${btoa(this.loginForm.account + ':' + this.loginForm.password)}`)
+              this.$store.commit('setUserInfo', res)
               this.$router.push({
                 path: "/"
               });
@@ -148,8 +148,7 @@ export default {
         }
       });
     },
-      /*
-      startFp () {
+    startFp () {
       this.isFP = true;
       this.$refs.loginForm.clearValidate()
       this.$nextTick(() => {
@@ -174,7 +173,6 @@ export default {
         })
       })
     }
-    */
   },
 };
 </script>

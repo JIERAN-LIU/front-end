@@ -23,7 +23,7 @@
     </div> -->
     <div class="info-list-wrapper">
       <p class="info-title"><span>Related Books</span><router-link class="more" :to="'/dashboard/book?author=' + $route.params.id">MORE >></router-link></p>
-      <BookItem v-for="b in relatedBooks" :key="b.id" :book="b" :author="$route.params.id" />
+      <BookItem v-for="b in relatedBooks" :key="b.id" :book="b" class="book-d" :author="$route.params.id" mode="detail" />
     </div>
   </div>
   
@@ -49,7 +49,7 @@ export default {
   },
   created () {
     this.getAuthorDetail()
-    this.getAuthorComment()
+    // this.getAuthorComment()
     this.getBookList()
   },
   mounted() {
@@ -108,7 +108,6 @@ export default {
   padding-left: 10px;
   padding-top: 20px;
   padding-bottom: 20px;
-  background: #f4f4f4;
 }
 .single-comment {
   color: #404040;
@@ -143,5 +142,8 @@ export default {
 }
 .more {
   font-size: 14px;
+}
+.book-d {
+  border-bottom: 2px solid #f6f6f6;
 }
 </style>

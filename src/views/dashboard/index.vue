@@ -1,10 +1,13 @@
 <template>
   <div class="container">
     <div class="header">
-      <span class="title">DASHBOARD</span>
+      <span class="title" @click="$route.name !== 'home' && $router.push('/dashboard/home')">LIBRARY SYSTEM</span>
       <el-dropdown>
-        <span class="user"><i class="el-icon-user"></i></span>
-        <el-dropdown-menu slot="dropdown">
+        <span class="user"><i class="el-icon-user"></i><span class="name">{{getUserInfo.username}}</span></span> 
+        <el-dropdown-menu style="min-width: 100px;margin: 0" slot="dropdown">
+          <el-dropdown-item v-if="isReader" @click.native="$route.name !== 'user' && $router.push('/dashboard/user')"
+            >User Center</el-dropdown-item
+          >
           <el-dropdown-item @click.native="modifyPassword"
             >Modify Password</el-dropdown-item
           >
@@ -14,21 +17,22 @@
     </div>
     <div class="body">
       <div class="tac">
-        <div class="menu">
+        <div v-if="isAdmin || isLibrarian" class="menu">
           <el-menu @select="changeMenu" :default-active="activePath">
-            <el-menu-item index="home">
+            <el-menu-item v-if="isLibrarian" index="workbench">
               <template slot="title"
-                ><i class="el-icon-s-home"></i>Home</template
+                ><i class="el-icon-set-up"></i>WorkBench</template
               >
             </el-menu-item>
-            <el-submenu index="2">
+            <el-submenu index="1">
               <template slot="title"
                 ><i class="el-icon-menu"></i>Menu</template
               >
-              <el-menu-item index="book"><i class="el-icon-collection"></i> Book </el-menu-item>
-              <el-menu-item index="author"><i class="el-icon-user"></i> Author </el-menu-item>
-              <el-menu-item index="publisher"><i class="el-icon-office-building"></i> Publisher </el-menu-item>
-              <el-menu-item index="college"><i class="el-icon-school"></i> College </el-menu-item>
+              <el-menu-item v-if="isLibrarian" index="book"><i class="el-icon-collection"></i> Book </el-menu-item>
+              <el-menu-item v-if="isLibrarian" index="author"><i class="el-icon-user"></i> Author </el-menu-item>
+              <el-menu-item v-if="isLibrarian" index="publisher"><i class="el-icon-office-building"></i> Publisher </el-menu-item>
+              <el-menu-item v-if="isAdmin || isLibrarian" index="users"><i class="el-icon-user"></i> Users </el-menu-item>
+              <el-menu-item v-if="isAdmin" index="college"><i class="el-icon-school"></i> College </el-menu-item>
             </el-submenu>
           </el-menu>
         </div>
@@ -56,7 +60,9 @@
 </template>
 
 <script>
-import { logout, modifyPassword } from "@api";
+import { logout, modifyPassword } from "@api"
+import { READER } from '../../constant'
+import { mapGetters } from 'vuex'
 export default {
   name: "Login",
   data() {
@@ -88,6 +94,9 @@ export default {
       },
     };
   },
+  computed: {
+    ...mapGetters(['isAdmin', 'getUserInfo', 'isReader', 'isLibrarian']),
+  },
   watch: {
     $route: {
       handler: function (route) {
@@ -101,12 +110,14 @@ export default {
   },
   created() {
   },
-  mounted() {},
+  mounted() {
+    console.log(this.getUserInfo)
+  },
   destroyed() {},
   methods: {
     changeMenu(val) {
       if (this.$route.name !== val) {
-        this.$router.push(val);
+        this.$router.push({name: val});
       }
     },
     logout() {
@@ -122,18 +133,23 @@ export default {
       this.$refs.form.validate((flag) => {
         if (flag) {
           const data = this.form;
-          this.form = {
-            oldPwd: "",
-            newPwd: "",
-          };
           this.showModal = false;
-          modifyPassword(data).then((data) => {
+          modifyPassword({
+            password: data.oldPwd,
+            new_password: data.newPwd
+          }).then((data) => {
             if (!data.error) {
+              localStorage.setItem('Authorization', `Basic ${btoa(this.getUserInfo.username + ':' + this.form.newPwd)}`)
+              this.form = {
+                oldPwd: "",
+                newPwd: "",
+              };
               this.$message({
                 message: "success!",
                 type: "success",
                 duration: 1.5 * 1000,
               });
+
             }
           });
         }
@@ -148,7 +164,7 @@ export default {
 .container,
 .body,
 .tac {
-  height: 100%;
+  /* height: 100%; */
 }
 .header {
   position: fixed;
@@ -162,6 +178,7 @@ export default {
   padding: 0 20px;
   box-sizing: border-box;
   left: 0;
+  z-index: 100;
 }
 .body {
   padding-top: 50px;
@@ -169,18 +186,20 @@ export default {
 }
 .user {
   font-size: 20px;
+  cursor: pointer;
 }
 .tac {
   display: flex;
 }
 .tac > div {
-  overflow: auto;
+  /* overflow: auto; */
 }
 .menu {
   width: 200px;
 }
 .view {
   width: calc(100% - 200px);
+  margin: 0 auto;
 }
 .el-menu {
   height: 100%;
@@ -202,5 +221,12 @@ export default {
   padding: 4px;
   box-sizing: border-box;
   border-radius: 9px;
+}
+.title {
+  cursor: pointer;
+}
+.name {
+  font-size: 13px;
+  margin-left: 10px;
 }
 </style>

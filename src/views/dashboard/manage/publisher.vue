@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div>
+    <div class="work-bench">
       <AddModal
         :formModal="formModal"
         @addEvent="addEvent"
@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import { getPublisherPage, addPublisher, editPublisher } from "@api";
+import { getPublisherPage, addPublisher, editPublisher, deletePublisher } from "@api";
 
 import AddModal from "@c/AddModal.vue";
 export default {
@@ -121,7 +121,7 @@ export default {
       });
     },
     handleDelete(row) {
-      deleteDish(row.id).then(() => {
+      deletePublisher(row.id).then(() => {
         this.refreshTable()
       })
     },
@@ -137,5 +137,8 @@ export default {
 .page-wrapper {
   text-align: right;
   margin: 10px;
+}
+.work-bench {
+  padding: 10px;
 }
 </style>

@@ -1,8 +1,8 @@
 <template>
   <span>
-    <el-button @click="showModal = true"> Select Borrower </el-button>
+    <el-button @click="showModal = true"> Select Reader </el-button>
     <el-dialog
-      title="Select Borrower"
+      title="Select Reader"
       destroy-on-close
       :visible.sync="showModal"
       @open="open"
@@ -17,7 +17,7 @@
         label-width="135px"
       >
         <el-form-item
-          label="Borrower"
+          label="Reader"
           prop="borrower"
         >
           <el-select
@@ -38,7 +38,7 @@
           </el-select>
         </el-form-item>
       </el-form>
-      <div>
+      <!-- <div>
         Borrowed List:
         <el-table style="width: 100%" :data="borrowList">
           <el-table-column
@@ -70,10 +70,19 @@
             </template>
           </el-table-column>
         </el-table>
+      </div> -->
+      <div v-if="currentReader">
+        <h3>Reader Info</h3>
+        <div>
+          <p><span class="title">username: </span> <span class="content">{{currentReader.username || '--'}}</span></p>
+          <p><span class="title">email: </span> <span class="content">{{currentReader.email || '--'}}</span></p>
+          <p><span class="title">student id: </span> <span class="content">{{currentReader.student_id || '--'}}</span></p>
+          <p><span class="title">college: </span> <span class="content">{{currentReader.college || '--'}}</span></p>
+        </div>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="showModal = false">Cancel</el-button>
-        <el-button type="primary" @click="ok">Next</el-button>
+        <el-button type="primary" @click="ok">OK</el-button>
       </span>
     </el-dialog>
   </span>
@@ -98,16 +107,16 @@ export default {
       },
       page: 1,
       loading: false,
-      borrowList: []
+      borrowList: [],
+      currentReader: null
     };
   },
   props: {
   },
-  computed: {},
   watch: {
     'form.borrower': {
-      handler () {
-        this.getBorrowList(true)
+      handler (v) {
+        this.currentReader = this.originUsers.find(i => i.id === v)
       }
     }
   },
@@ -182,5 +191,14 @@ export default {
 }
 .flex-form .el-form-item:nth-child(odd) {
   padding-right: 10px;
+}
+.title {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+.content {
+  font-size: 13px;
+  color: #999;
 }
 </style>

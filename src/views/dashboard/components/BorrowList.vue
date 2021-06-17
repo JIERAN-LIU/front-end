@@ -11,15 +11,16 @@
         :timestamp="timeFormat(item.borrowed_at)">
         <div>
           <el-card class="">
-            <h4><router-link :to="'/book-detail/' + item.book">{{item.book_info.title}}</router-link></h4>
+            <h4><router-link :to="'./book-detail/' + item.book_info.id">{{item.book_info.title}}</router-link></h4>
             <p v-if="item.remain_days">
               <span>Remain Days: </span>
               <span class="remain-days"><vns :start="0" :end="item.remain_days" :times="4" :speed="100"/></span>
             </p>
             <p><span>Borrowed At: </span><span class="grey-item">{{timeFormat(item.borrowed_at)}}</span></p>
             <p v-if="item.returned_at"><span>Returned At: </span><span class="grey-item">{{timeFormat(item.returned_at)}}</span></p>
-            <p class="handler-wrapper" v-if="!item.has_returned && !item.has_renewed && !item.has_overdue">
+            <p class="handler-wrapper">
               <el-popconfirm
+                v-if="!item.has_returned && !item.has_renewed && !item.has_overdue"
                 title="Confirm to renew?"
                 confirm-button-text='OK'
                 cancel-button-text='NO'
@@ -27,6 +28,16 @@
                 @confirm="handleRenew(item.id)"
               >
                 <el-button slot="reference" type="primary" size="mini">Renew</el-button>
+              </el-popconfirm>
+              <el-popconfirm
+                v-if="!item.has_returned && $store.getters.isLibrarian"
+                title="Confirm to return?"
+                confirm-button-text='OK'
+                cancel-button-text='NO'
+                style="margin-left: 10px"
+                @confirm="handleReturn(item.id)"
+              >
+                <el-button slot="reference" type="success" size="mini">Return</el-button>
               </el-popconfirm>
             </p>
           </el-card>
@@ -37,10 +48,13 @@
 </template>
 
 <script>
-import { getBorrowList, renew } from "@api";
+import { getBorrowList, renew, returnBook } from "@api";
 import vns from "vue-number-scroll"
 export default {
   name: "borrowList",
+  props: {
+    rid: Number
+  },
   components: {
     vns
   },
@@ -55,13 +69,19 @@ export default {
   created () {
     this.getBorrowList()
   },
+  watch: {
+    rid() {
+      this.page = 1
+      this.getBorrowList()
+    }
+  },
   methods: {
-    getBorrowList () {
-      const info = JSON.parse(localStorage.getItem('user'))
+    getBorrowList (refresh) {
+      const id = this.rid || this.$store.getters.getUserInfo.id
       this.loading = true
       getBorrowList({
-        reader: info.id,
-        page: this.page
+        reader: id,
+        page: refresh ? (this.page = 1) : this.page
       }).then(res => {
         this.page++
         this.borrowList = res.results
@@ -92,6 +112,14 @@ export default {
     },
     handleRenew (id) {
       renew(id).finally(() => {
+        this.borrowList = []
+        this.next = null
+        this.page = 1
+        this.getBorrowList()
+      })
+    },
+    handleReturn (id) {
+      returnBook(id).finally(() => {
         this.borrowList = []
         this.next = null
         this.page = 1

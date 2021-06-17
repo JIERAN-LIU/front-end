@@ -28,7 +28,7 @@
       <p v-if="mode !== 'detail'">
         <span class="a-tit">profile:</span>
         <span class="a-info">{{author.profile.length > 80 ? author.profile.slice(0,80) + '...' : author.profile}}</span>
-        <router-link class="a-info a-more" :to="'/author-detail/' + author.id" >MORE >></router-link>
+        <router-link class="a-info a-more" :to="'./author-detail/' + author.id" >MORE >></router-link>
       </p>
       <div v-if="mode!=='detail'" class="handler-wrapper">
         <span @click="$emit('onEdit')" class="handle-inner-wrapper">
@@ -92,6 +92,9 @@ export default {
   padding: 10px;
   display: flex;
   flex-wrap: wrap;
+}
+.a-container:hover {
+  background: #f9f9f9;
 }
 .rest-info {
   flex: 1;

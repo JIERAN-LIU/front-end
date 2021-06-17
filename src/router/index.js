@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import store from '../store/store'
 
 Vue.use(Router)
 
@@ -15,8 +16,13 @@ const router = new Router({
       component: () => import('@/views/dashboard/index'),
       children: [
         {
+          path: 'user',
+          component: () => import('@/views/dashboard/user'),
+          name: 'user'
+        },
+        {
           path: 'home',
-          component: () => import('@/views/dashboard/home'),
+          component: () => import('@/views/dashboard/manage/book'),
           name: 'home'
         },
         {
@@ -35,22 +41,33 @@ const router = new Router({
           name: 'publisher'
         },
         {
+          path: 'users',
+          component: () => import('@/views/dashboard/manage/users'),
+          name: 'users'
+        },
+        {
           path: 'college',
           component: () => import('@/views/dashboard/manage/college'),
           name: 'college'
+        },
+        {
+          path: 'book-detail/:id',
+          component: () => import('@/views/bookDetail/index')
+        },
+        {
+          path: 'workbench',
+          component: () => import('@/views/dashboard/workbench/borrow&return.vue'),
+          name: 'workbench'
+        },
+        {
+          path: 'author-detail/:id',
+          component: () => import('@/views/authorDetail/index')
         }
       ]
     },
     {
-      path: '/book-detail/:id',
-      component: () => import('@/views/bookDetail/index')
-    },
-    {
-      path: '/author-detail/:id',
-      component: () => import('@/views/authorDetail/index')
-    },
-    {
       path: '/login',
+      name: 'login',
       component: () => import('@/views/login/index'),
       meta: {
         isPublic: true
@@ -68,7 +85,17 @@ router.beforeEach((to, from, next) => {
       path: '/login'
     })
   } else {
-    next();
+    if (to.name === 'home') {
+      if (store.getters.isAdmin) {
+        next('/dashboard/users')
+      } else if (store.getters.isLibrarian) {
+        next('/dashboard/workbench')
+      } else {
+        next();
+      }
+    } else {
+      next();
+    }
   }
 })
 export default router

@@ -82,6 +82,9 @@ export default {
       await this.$refs.form.validate()
       return this.form.copies
     },
+    setCopy (copies) {
+      this.form.copies = copies
+    },
     delCopy (row) {
       this.form.copies = this.form.copies.filter(i => i !== row)
     }

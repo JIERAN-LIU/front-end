@@ -55,9 +55,6 @@
             :remote="!!i.attrs.remote"
             :multiple="!!i.attrs.multiple"
             filterable
-            @focus="() => {
-              i.attrs.remote && i.attrs.remote()
-            }"
             placeholder="Input keywords to search"
             :remote-method="i.attrs.remote"
           >
@@ -101,7 +98,8 @@ export default {
       addForm: {},
       isEdit: false,
       console: window.console,
-      lazyAddRules: null
+      lazyAddRules: null,
+      cbs: []
     };
   },
   props: {
@@ -127,6 +125,9 @@ export default {
       this.$nextTick(() => {
         this.$refs.addForm.clearValidate()
       })
+      this.formModal.map(i => {
+        i.attrs && i.attrs.remote && i.attrs.remote()
+      })
     },
     closed() {
       this.isEdit = false;
@@ -135,6 +136,8 @@ export default {
         return res;
       }, {});
       this.$refs.addForm.clearValidate()
+      this.cbs.map(i => i())
+      this.cbs = []
     },
     ok() {
       this.$refs.addForm.validate((val) => {
@@ -146,12 +149,13 @@ export default {
         }
       });
     },
-    edit(info) {
+    edit(info, cbs = []) {
       this.isEdit = true;
       this.showModal = true;
       setTimeout(() => {
         this.addForm = info;
       });
+      this.cbs.push(...cbs)
     },
   },
 };
