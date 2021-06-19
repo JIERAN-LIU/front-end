@@ -148,31 +148,7 @@ export default {
         }
       });
     },
-    startFp () {
-      this.isFP = true;
-      this.$refs.loginForm.clearValidate()
-      this.$nextTick(() => {
-        this.$refs.loginForm.validate((valid) => {
-          if (valid) {
-            this.$confirm('We will send a new password to ' + this.loginForm.account, 'Tip', {
-              confirmButtonText: 'OK',
-              cancelButtonText: 'Cancel',
-              type: 'warning'
-            }).then(() => {
-              forgetPassword({ account: this.loginForm.account }).then(data => {
-                if (!data.error) {
-                  this.$message({
-                    message: 'success!',
-                    type: 'success',
-                    duration: 1.5 * 1000
-                  })
-                }
-              })
-            })
-          }
-        })
-      })
-    }
+    
   },
 };
 </script>
