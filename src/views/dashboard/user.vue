@@ -19,7 +19,7 @@
             :action="actionUrl">
             <div class="img" :style="{ 'background-image': 'url(' + editInfo.avatar +')' }"></div>
             <!-- <img :src="editInfo.avatar" alt=""> -->
-            <!-- <el-button size="small" type="primary">点击上传</el-button> -->
+            <!-- <el-button size="small" type="primary">click to upload</el-button> -->
           </el-upload>
           <div v-else class="img" :style="{ 'background-image': 'url(' + userInfo.avatar +')' }"></div>
 
