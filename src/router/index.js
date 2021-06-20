@@ -52,7 +52,8 @@ const router = new Router({
         },
         {
           path: 'book-detail/:id',
-          component: () => import('@/views/bookDetail/index')
+          component: () => import('@/views/bookDetail/index'),
+          name: 'bookDetail'
         },
         {
           path: 'workbench',
@@ -61,7 +62,8 @@ const router = new Router({
         },
         {
           path: 'author-detail/:id',
-          component: () => import('@/views/authorDetail/index')
+          component: () => import('@/views/authorDetail/index'),
+          name: 'authorDetail'
         }
       ]
     },

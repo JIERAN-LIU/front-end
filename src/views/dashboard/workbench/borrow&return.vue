@@ -3,19 +3,39 @@
 
     <div class="nav-wrap nav">
       <div class="nav-primary">
-        
+
         <div class="nav-search">
-          <el-input size="small" placeholder="enter keywords" v-model="key">
-            <template slot="append"><el-button type="primary" @click="searchBook" icon="el-icon-search">Search</el-button></template>
-          </el-input>
+          <el-popover placement="bottom" width="500" trigger="manual" :value="visible">
+            <el-input slot="reference" size="small" placeholder="Enter keywords" @keydown.native.enter="searchBook()" @input="searchBookComplete" v-model="key">
+              <template slot="append">
+                <el-button type="primary" @click="searchBook()" icon="el-icon-search">Search</el-button>
+              </template>
+            </el-input>
+            <ul id="drop" class="el-scrollbar__view el-select-dropdown__list">
+              <li v-for="i in searchResult" :key="i.id" @click="quickSearch(i)" class="el-select-dropdown__item">
+                <span>{{i.title}}</span>
+              </li>
+            </ul>
+          </el-popover>
+          <!-- <el-dropdown style="width: 100%">
+            
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item v-for="i in searchResult" :key="i.id">{{i.title}}</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown> -->
+
         </div>
         <SelectBorrowPeople @selectedBorrower="onSelectedBorrower" />
       </div>
-      
+
     </div>
     <div class="content-wrapper">
       <div class="book-info-wrapper">
         <BookItem class="item" v-for="i in tableData" @onBorrow="onBorrow(i)" :book="i" :key="i.id" workbench />
+        <p class="page-nation">
+          <el-pagination background layout="prev, pager, next" @current-change="pageChange" :total="total">
+          </el-pagination>
+        </p>
       </div>
       <div class="reader-info-wrapper">
         <div>
@@ -32,7 +52,7 @@
           </div>
         </div>
         <div v-if="currentReader">
-          <BorrowList :rid="currentReader.id" ref="borrowList"/>
+          <BorrowList :rid="currentReader.id" ref="borrowList" />
         </div>
       </div>
     </div>
@@ -41,21 +61,19 @@
 </template>
 
 <script>
-import { getBookPage } from '@api'
 import { mapGetters } from 'vuex'
 import BookItem from '@c/BookItem.vue'
 import CopyBookForm from '@c/CopyBookForm.vue'
 import SelectBorrowPeople from '@c/SelectBorrowPeople'
 import BorrowModal from '@c/BorrowModal'
 import BorrowList from '../components/BorrowList.vue'
+import bookMixin from '../mixins/book.mixins'
 export default {
   name: "book",
   components: { BookItem, CopyBookForm, SelectBorrowPeople, BorrowModal, BorrowList },
-  data() {
+  mixins: [bookMixin],
+  data () {
     return {
-      tableData: [],
-      total: 0,
-      key: '',
       currentReader: null
     };
   },
@@ -64,25 +82,12 @@ export default {
     ...mapGetters(['isReader']),
   },
   watch: {},
-  created() {
+  created () {
     this.refreshTable();
   },
-  mounted() {},
-  destroyed() {},
+  mounted () { },
+  destroyed () { },
   methods: {
-    refreshTable(pageNum = 1, title='') {
-      getBookPage({
-        page: pageNum,
-        title
-      }).then((res) => {
-        const { count: total, results: list } = res;
-        this.total = total;
-        this.tableData = list;
-      });
-    },
-    async searchBook () {
-      this.refreshTable(1, this.key)
-    },
     onSelectedBorrower (user) {
       this.currentReader = user
     },
@@ -117,7 +122,7 @@ export default {
   zoom: 1;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px
+  padding: 0 20px;
 }
 .nav .nav-logo {
   height: 56px;
@@ -128,7 +133,7 @@ export default {
   width: 500px;
   padding: 10px 0 15px 0;
 }
-.item + .item{
+.item + .item {
   margin-top: 20px;
 }
 .content-wrapper {
@@ -157,5 +162,9 @@ h2.title {
   line-height: 200px;
   color: #ccc;
   text-align: center;
+}
+.page-nation {
+  text-align: right;
+  margin-top: 10px;
 }
 </style>

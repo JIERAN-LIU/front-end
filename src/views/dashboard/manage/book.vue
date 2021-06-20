@@ -6,21 +6,24 @@
         <div class="nav-logo">
         </div>
         <div class="nav-search">
-          <el-input size="small" placeholder="enter keywords" v-model="key">
-            <template slot="append"><el-button type="primary" @click="searchBook" icon="el-icon-search">Search</el-button></template>
-          </el-input>
+          <el-popover placement="bottom" width="500" trigger="manual" :value="visible">
+            <el-input slot="reference" size="small" placeholder="Enter keywords" @keydown.native.enter="searchBook()" @input="searchBookComplete" v-model="key">
+              <template slot="append">
+                <el-button type="primary" @click="searchBook()" icon="el-icon-search">Search</el-button>
+              </template>
+            </el-input>
+            <ul id="drop" class="el-scrollbar__view el-select-dropdown__list">
+              <li v-for="i in searchResult" :key="i.id" @click="quickSearch(i)" class="el-select-dropdown__item">
+                <span>{{i.title}}</span>
+              </li>
+            </ul>
+          </el-popover>
         </div>
       </div>
     </div>
 
     <div class="work-banch" v-if="!isReader">
-      <AddModal
-        :formModal="formModal"
-        flex
-        @addEvent="addEvent"
-        @editEvent="editEvent"
-        ref="modal"
-      >
+      <AddModal :formModal="formModal" flex @addEvent="addEvent" @editEvent="editEvent" ref="modal">
         <CopyBookForm ref="copyForm"></CopyBookForm>
       </AddModal>
     </div>
@@ -29,10 +32,14 @@
     <div :class="{'fixed-book': isReader}" class="content-wrapper">
       <div class="book-info-wrapper" :class="{'is-reader': isReader}">
         <BookItem class="item" v-for="i in tableData" @showDetail="showDetail(i)" @onEdit="handleEdit(i)" @onDelete="handleDelete(i)" :book="i" :key="i.id" />
+        <p class="page-nation">
+          <el-pagination background layout="prev, pager, next" @current-change="pageChange" :total="total">
+          </el-pagination>
+        </p>
       </div>
       <div v-if="isReader" class="rec-info-wrapper">
         <h2 class="title-l">Books You May Interred In:</h2>
-        <RecBook v-for="book in recommendList" :key="book.id" :book="book"/>
+        <RecBook v-for="book in recommendList" :key="book.id" :book="book" />
       </div>
     </div>
 
@@ -40,21 +47,19 @@
 </template>
 
 <script>
-import { getBookPage, addBook, editBook, deleteBook, getAuthorPage, getPublisherPage, getCopyPage, getRecommend } from '@api'
+import { addBook, editBook, deleteBook, getAuthorPage, getPublisherPage, getCopyPage, getRecommend } from '@api'
 import { mapGetters } from 'vuex'
 import BookItem from '@c/BookItem.vue'
 import AddModal from '@c/AddModal.vue'
 import CopyBookForm from '@c/CopyBookForm.vue'
 import RecBook from '@c/RecBook.vue'
+import bookMixin from '../mixins/book.mixins'
 export default {
   name: "book",
+  mixins: [bookMixin],
   components: { AddModal, BookItem, CopyBookForm, RecBook },
-  data() {
+  data () {
     return {
-      tableData: [],
-      total: 0,
-      key: '',
-      promotionPrice: '',
       authorOptions: [],
       publisherOptions: [],
       activeBook: {},
@@ -77,7 +82,7 @@ export default {
           label: 'Language',
           prop: 'language',
           rules: [
-            { required: true, trigger: 'change'}
+            { required: true, trigger: 'change' }
           ],
           type: 'select',
           attrs: {
@@ -101,7 +106,7 @@ export default {
           rules: [
             { required: true, trigger: 'change' }
           ],
-          type: 'input'
+          type: 'pic'
         },
         {
           label: 'ISBN 10',
@@ -206,16 +211,16 @@ export default {
     },
   },
   watch: {},
-  created() {
+  created () {
     this.refreshTable();
     if (this.isReader) {
       this.getRecommend()
     }
   },
-  mounted() {},
-  destroyed() {},
+  mounted () { },
+  destroyed () { },
   methods: {
-    async addEvent(data) {
+    async addEvent (data) {
       const copies = await this.$refs.copyForm.getCopy()
       addBook({
         ...data,
@@ -229,17 +234,7 @@ export default {
         this.refreshTable();
       });
     },
-    refreshTable(pageNum = 1, title='') {
-      getBookPage({
-        page: pageNum,
-        title
-      }).then((res) => {
-        const { count: total, results: list } = res;
-        this.total = total;
-        this.tableData = list;
-      });
-    },
-    handleDelete(row) {
+    handleDelete (row) {
       deleteBook(row.id).then(() => {
         this.refreshTable()
       })
@@ -261,7 +256,7 @@ export default {
       }).then(res => {
         this.$refs.copyForm.setCopy(res.results)
       })
-      
+
     },
     showDetail () {
 
@@ -294,14 +289,11 @@ export default {
         label: i.name
       }))
     },
-    async searchBook () {
-      this.refreshTable(1, this.key)
-    },
     getRecommend () {
       getRecommend().then(res => {
         this.recommendList = res.results
       })
-    },
+    }
   },
 };
 </script>
@@ -324,7 +316,6 @@ export default {
   position: relative;
   padding: 10px 0 5px;
   zoom: 1;
-  
 }
 .nav .nav-logo {
   height: 56px;
@@ -335,7 +326,7 @@ export default {
   width: 500px;
   padding: 10px 0 15px 0;
 }
-.item + .item{
+.item + .item {
   margin-top: 20px;
 }
 .work-banch {
@@ -343,7 +334,7 @@ export default {
 }
 .fixed {
   position: absolute;
-  width: 100vw;
+  width: calc(100vw - 15px);
   left: 0;
   top: 50px;
 }
@@ -352,6 +343,7 @@ export default {
 }
 .content-wrapper {
   display: flex;
+  margin-bottom: 20px;
 }
 .book-info-wrapper {
   flex: 1;
@@ -367,5 +359,9 @@ export default {
   flex-wrap: wrap;
   align-self: baseline;
   justify-content: space-between;
+}
+.page-nation {
+  text-align: right;
+  margin-top: 10px;
 }
 </style>

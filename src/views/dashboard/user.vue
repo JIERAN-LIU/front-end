@@ -37,10 +37,6 @@
           <div class="center input-emali" v-else>
             <el-input style="width: 80%;"  v-model="editInfo.email"></el-input>
           </div>
-          <div v-if="!isEdit" class="info-row">
-            <span class="info-name">admission at:</span>
-            <span class="info-value">{{userInfo.admission_at}}</span>
-          </div>
           <el-button type="primary" v-if="!isEdit" plain class="edit-btn" @click="edit">EDIT</el-button>
           <p class="btn-wrapper" v-else>
             <el-button @click="isEdit = false">CANCEL</el-button>

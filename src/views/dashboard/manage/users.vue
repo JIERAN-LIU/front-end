@@ -12,8 +12,8 @@
     <el-table :data="tableData" style="width: 100%">
       <el-table-column :label="i.label" :prop="i.prop" v-for="i in formModal" :key="i.prop">
         <template slot-scope="scope">
-          <img v-if="i.prop === 'avatar'" style="max-width: 200px;max-height: 200px" :src="scope.row.avatar" alt="">
-          <span v-if="i.prop === 'college'" >{{scope.row.college_info.name}}</span>
+          <img v-if="i.prop === 'avatar'" style="max-width: 80px;max-height: 80px" :src="scope.row.avatar" alt="">
+          <span v-else-if="i.prop === 'college'" >{{scope.row.college_info.name}}</span>
           <span v-else>{{scope.row[i.prop]}}</span>
         </template>
       </el-table-column>
@@ -59,7 +59,7 @@
 import { getUserPage, addUser, editUser, deleteUser, resetUser, getCollegePage } from "@api";
 import AddModal from "@c/AddModal.vue";
 import { mapGetters } from 'vuex'
-import { ADMIN, LIBRARIAN, READER } from '../../../constant'
+import { LIBRARIAN, READER } from '../../../constant'
 export default {
   name: "author",
   components: { AddModal },
@@ -73,35 +73,25 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getIdentity']),
-    getRoleOptions() {
-      if (this.getIdentity === ADMIN) {
-        return [{ value: LIBRARIAN, label: LIBRARIAN }]
-      } else if (this.getIdentity === LIBRARIAN) {
-        return [{ value: READER, label: READER }]
-      }
-      return []
-    },
+    ...mapGetters(['isAdmin', 'isLibrarian']),
     formModal () {
-      return [
+      const staticOptions = [
         {
-          label: 'Name',
+          label: 'Account',
           prop: 'username',
           rules: [
-            { required: true, trigger: "blur" }
+            { required: true, trigger: "blur" },
+            { pattern: /^[0-9A-Za-z\@\.\+\-\_]+$/, message: 'Account contains only letters, numbers, and @/./+/-/_ characters', trigger: 'blur' }
           ],
           type: 'input'
         },
         {
-          label: 'Role',
-          prop: 'role',
+          label: 'Name',
+          prop: 'nickname',
           rules: [
-            { required: true, trigger: "change" }
+            { required: true, trigger: "blur" }
           ],
-          type: 'select',
-          attrs: {
-            options: this.getRoleOptions
-          }
+          type: 'input'
         },
         {
           label: 'Email',
@@ -110,11 +100,24 @@ export default {
             { required: true, trigger: "blur" }
           ],
           type: 'input'
+        }
+      ]
+      const readerOptions = [
+        {
+          label: 'Avatar',
+          prop: 'avatar',
+          rules: [
+            { required: true, trigger: "change" }
+          ],
+          type: 'pic'
         },
         {
           label: 'College',
           prop: 'college',
           type: 'select',
+          rules: [
+            { required: true, trigger: "change" }
+          ],
           attrs: {
             options: this.collegeOptions,
             multiple: false,
@@ -124,9 +127,16 @@ export default {
         {
           label: 'Student Id',
           prop: 'student_id',
+          rules: [
+            { required: true, trigger: "blur" }
+          ],
           type: 'input'
         }
       ]
+      if (this.isLibrarian) {
+        staticOptions.push(...readerOptions)
+      }
+      return staticOptions
     }
   },
   watch: {},
@@ -137,7 +147,11 @@ export default {
   destroyed() {},
   methods: {
     addEvent(data) {
-      addUser(data).then(() => {
+
+      addUser({
+        ...data,
+        role: this.isAdmin ? LIBRARIAN : READER
+      }).then(() => {
         this.refreshTable();
       });
     },

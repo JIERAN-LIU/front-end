@@ -6,7 +6,8 @@
 
     <div class="rest-info">
       <h2>
-        <span>{{book.title}}</span>
+        <router-link v-if="mode !== 'detail'" :to="'/dashboard/book-detail/' + book.id"><span v-html="book.title"></span></router-link>
+        <span v-else v-html="book.title"></span>
       </h2>
       <p>
         <span class="a-tit">authors:</span>
@@ -19,33 +20,93 @@
           </router-link>
         </span>
       </p>
-      <p>
-        <span class="a-tit">price:</span>
-        <span class="a-info">{{book.price}}</span>
-      </p>
-      <p v-if="book.publisher_info">
-        <span class="a-tit">publisher:</span>
-        <span class="a-info">
-        {{book.publisher_info.name}}
+      <div class="flex-p">
+        <p>
+          <span class="a-tit">price:</span>
+          <span class="a-info">{{book.price}}</span>
+        </p>
+        <p v-if="book.publisher_info">
+          <span class="a-tit">publisher:</span>
+          <span class="a-info">
+            <span v-html="book.publisher_name || book.publisher_info.name"></span>
+          </span>
+        </p>
+      </div>
+      <div class="flex-p">
+        <p>
+          <span class="a-tit">ISBN 10:</span>
+          <span class="a-info">
+            <span v-html="book.isbn_10"></span>
+          </span>
+        </p>
+        <p>
+          <span class="a-tit">ISBN 13:</span>
+          <span class="a-info">
+            <span v-html="book.isbn_13"></span>
+          </span>
+        </p>
+      </div>
+      
+      <div class="flex-p">
+        <p>
+          <span class="a-tit">Subject:</span>
+          <span class="a-info">
+            <span v-html="book.subject"></span>
+          </span>
+        </p>
+        
+        <p>
+          <span class="a-tit">language:</span>
+          <span class="a-info">
+            <span v-html="book.language"></span>
+          </span>
+        </p>
+      </div>
+      <div class="flex-p">
+        <p>
+          <span class="a-tit">publication date:</span>
+          <span v-if="book.publication_date" class="a-info">
+            <span v-html="book.publication_date.slice(0, 10)"></span>
+          </span>
+        </p>
+        <p>
+          <span class="a-tit">Binding:</span>
+          <span class="a-info">
+            <span v-html="book.binding"></span>
+          </span>
+        </p>
+      </div>
+      <div class="flex-p">
+        <p>
+          <span class="a-tit">call number:</span>
+          <span class="a-info">
+            <span v-html="book.call_number"></span>
+          </span>
+        </p>
+        <p>
+          
+        </p>
+      </div>
+      <p class="dec-p" v-if="mode !== 'detail'">
+        <span class="a-tit">description:</span>
+        <span class="a-info desc">
+          <span v-html="book.description"></span>
         </span>
       </p>
-      <p>
-        <span class="a-tit">publication date:</span>
-        <span class="a-info">{{book.publication_date}}</span>
+      <p class="dec-p" v-if="mode !== 'detail'">
+        <span class="a-tit">Toc:</span>
+        <span class="a-info desc">
+          <span v-html="book.toc"></span>
+        </span>
       </p>
-      <p>
-        <span class="a-tit">ISBN:</span>
-        <span class="a-info">{{book.isbn_10}}</span>
-      </p>
-      <p>
-        <span class="a-tit">language:</span>
-        <span class="a-info">{{book.language}}</span>
-      </p>
-      <p v-if="mode !== 'detail'">
-        <span class="a-tit">description:</span>
-        <span class="a-info">{{book.description.length > 80 ? book.description.slice(0,80) + '...' : book.description}}</span>
-        <router-link class="a-info a-more" :to="'/dashboard/book-detail/' + book.id">MORE >></router-link>
-      </p>
+      
+      <!-- <p>
+        <span class="a-tit">Toc:</span>
+        <span class="a-info desc">
+          <span v-html="book.toc"></span>
+        </span>
+        <span></span>
+      </p> -->
 
       <div v-if="mode !== 'detail' && !isReader" class="handler-wrapper">
         <el-tooltip v-if="!workbench" class="item" effect="dark" content="EDIT" placement="top">
@@ -132,6 +193,8 @@ export default {
   flex: 1;
   margin-left: 10px;
   position: relative;
+  font-size: 12px;
+  line-height: 19px;
 }
 .a-avatar-wrapper {
   height: 200px;
@@ -148,7 +211,7 @@ export default {
 }
 .a-tit {
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
   text-transform: capitalize;
   color: #555;
   display: inline-block;
@@ -216,5 +279,25 @@ export default {
   width: 20px;
   height: 20px;
   vertical-align: middle;
+}
+.dec-p {
+  display: flex;
+  align-items: baseline;
+}
+.desc {
+  flex: 1;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.flex-p {
+  display: flex;
+}
+.flex-p > p {
+  width: 50%;
+}
+.flex-p > p + p {
+  padding-left: 5px;
 }
 </style>

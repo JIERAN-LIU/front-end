@@ -28,4 +28,10 @@ body,
 .container {
   box-sizing: border-box;
 }
+.highlighted {
+  color: #f40;
+}
+.el-upload-list {
+  display: none!important;;
+}
 </style>

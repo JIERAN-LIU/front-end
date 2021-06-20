@@ -1,12 +1,13 @@
 <template>
   <div class="a-container">
-    <div class="a-avatar-wrapper">
+    <div @click="$router.push('/dashboard/author-detail/' + author.id)" class="a-avatar-wrapper">
       <img class="a-avatar" :src="author.avatar" alt="">
     </div>
     
     <div class="rest-info">
       <h2>
-        <span>{{author.name}}</span>
+        <span v-if="mode === 'detail'">{{author.name}}</span>
+        <router-link v-else  :to="'./author-detail/' + author.id" >{{author.name}}</router-link>
       </h2>
       <p>
         <span class="a-tit">nation:</span>
@@ -25,10 +26,9 @@
         <span class="a-info">{{author.profile.length > 80 ? author.profile.slice(0,80) + '...' : author.profile}}</span>
         <span class="a-info a-more" @click="showDetail" v-if="author.profile.length > 80">MORE >></span>
       </p> -->
-      <p v-if="mode !== 'detail'">
+      <p class="dec-p" v-if="mode !== 'detail'">
         <span class="a-tit">profile:</span>
-        <span class="a-info">{{author.profile.length > 80 ? author.profile.slice(0,80) + '...' : author.profile}}</span>
-        <router-link class="a-info a-more" :to="'./author-detail/' + author.id" >MORE >></router-link>
+        <span class="a-info desc">{{author.profile}}</span>
       </p>
       <div v-if="mode!=='detail'" class="handler-wrapper">
         <span @click="$emit('onEdit')" class="handle-inner-wrapper">
@@ -100,6 +100,7 @@ export default {
   flex: 1;
   margin-left: 10px;
   position: relative;
+  font-size: 12px;
 }
 .a-avatar-wrapper {
   height: 150px;
@@ -116,7 +117,7 @@ export default {
 }
 .a-tit {
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
   text-transform: capitalize;
   color: #555;
 }
@@ -162,5 +163,16 @@ export default {
 .handle-inner-wrapper.del {
   background: #fc9797;
   color: #fff;
+}
+.dec-p {
+  display: flex;
+  align-items: baseline;
+}
+.desc {
+  flex: 1;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 </style>

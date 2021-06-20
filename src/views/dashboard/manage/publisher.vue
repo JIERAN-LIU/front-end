@@ -80,7 +80,7 @@ export default {
           rules: [
             { required: true, trigger: "blur" }
           ],
-          type: 'input'
+          type: 'pic'
         },
         {
           label: 'Site',

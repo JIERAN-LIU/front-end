@@ -22,7 +22,7 @@
       </div>
     </div> -->
     <div class="info-list-wrapper">
-      <p class="info-title"><span>Related Books</span><router-link class="more" :to="'/dashboard/book?author=' + $route.params.id">MORE >></router-link></p>
+      <p class="info-title"><span>Related Books</span><router-link class="more" :to="'/dashboard/book?author=' + $route.params.id"></router-link></p>
       <BookItem v-for="b in relatedBooks" :key="b.id" :book="b" class="book-d" :author="$route.params.id" mode="detail" />
     </div>
   </div>
