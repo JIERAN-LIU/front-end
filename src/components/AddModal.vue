@@ -12,7 +12,7 @@
               </el-upload>
             </template>
           </el-input>
-          <el-select v-if="i.type === 'select'" v-model="addForm[i.prop]" style="width: 100%;" :remote="!!i.attrs.remote" :multiple="!!i.attrs.multiple" filterable placeholder="Input keywords to search" :remote-method="i.attrs.remote">
+          <el-select v-if="i.type === 'select'" v-model="addForm[i.prop]" style="width: 100%;" :remote="!!i.attrs.remote" :multiple="!!i.attrs.multiple" filterable placeholder="Selection" :remote-method="i.attrs.remote">
             <el-option v-for="item in i.attrs.options" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
