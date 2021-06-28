@@ -21,6 +21,7 @@ const store = new Vuex.Store({
     identity: user && user.role || READER
   },
   getters:{
+    // 参数列表state指的是state数据
     getBindingsOptions (state) {
       return getCommon('BINDINGS', state)
     },
