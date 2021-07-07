@@ -32,7 +32,7 @@
               <el-menu-item v-if="isLibrarian" index="author"><i class="el-icon-user"></i> Author </el-menu-item>
               <el-menu-item v-if="isLibrarian" index="publisher"><i class="el-icon-office-building"></i> Publisher </el-menu-item>
               <el-menu-item v-if="isAdmin || isLibrarian" index="users"><i class="el-icon-user"></i> Users </el-menu-item>
-              <el-menu-item v-if="isAdmin" index="college"><i class="el-icon-school"></i> College </el-menu-item>
+              <el-menu-item v-if="isAdmin" index="college"><i class="el-icon-school"></i> Faculty </el-menu-item>
             </el-submenu>
           </el-menu>
         </div>

@@ -424,4 +424,16 @@ export function getCopyPage(params) {
   })
 }
 
+export function searchBook(params) {
+  return request({
+    url: '/search/book/',
+    params
+  })
+}
 
+export function searchBookComplete(params) {
+  return request({
+    url: '/search/complete/book/',
+    params
+  })
+}

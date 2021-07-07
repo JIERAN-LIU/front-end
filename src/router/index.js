@@ -12,7 +12,15 @@ const router = new Router({
     },
     {
       path: '/dashboard',
-      redirect: '/dashboard/home',
+      redirect: () => {
+        if (store.getters.isAdmin) {
+          return '/dashboard/users'
+        } else if (store.getters.isLibrarian) {
+          return '/dashboard/workbench'
+        } else {
+          return '/dashboard/home'
+        }
+      },
       component: () => import('@/views/dashboard/index'),
       children: [
         {
@@ -87,17 +95,11 @@ router.beforeEach((to, from, next) => {
       path: '/login'
     })
   } else {
-    if (to.name === 'home') {
-      if (store.getters.isAdmin) {
-        next('/dashboard/users')
-      } else if (store.getters.isLibrarian) {
-        next('/dashboard/workbench')
-      } else {
-        next();
-      }
-    } else {
-      next();
-    }
+    next()
   }
+})
+
+router.onError((err) => {
+  console.log(err)
 })
 export default router

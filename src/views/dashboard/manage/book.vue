@@ -222,6 +222,7 @@ export default {
   methods: {
     async addEvent (data) {
       const copies = await this.$refs.copyForm.getCopy()
+      this.$refs.modal.close()
       addBook({
         ...data,
         copies

@@ -12,7 +12,7 @@
               </el-upload>
             </template>
           </el-input>
-          <el-select v-if="i.type === 'select'" v-model="addForm[i.prop]" style="width: 100%;" :remote="!!i.attrs.remote" :multiple="!!i.attrs.multiple" filterable placeholder="Selection" :remote-method="i.attrs.remote">
+          <el-select v-if="i.type === 'select'" v-model="addForm[i.prop]" style="width: 100%;" :remote="!!i.attrs.remote" :multiple="!!i.attrs.multiple" filterable placeholder="Input keywords to search" :remote-method="i.attrs.remote">
             <el-option v-for="item in i.attrs.options" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
@@ -76,6 +76,9 @@ export default {
         i.attrs && i.attrs.remote && i.attrs.remote()
       })
     },
+    close () {
+      this.showModal = false
+    },
     closed () {
       this.isEdit = false;
       this.addForm = this.formModal.reduce((res, item) => {
@@ -89,12 +92,16 @@ export default {
       this.cbs = []
     },
     ok () {
-      this.$refs.addForm.validate((val) => {
+
+      const slot = this.$slots.default
+
+      this.$refs.addForm.validate().then((val) => {
         if (val) {
           this.$emit(this.isEdit ? "editEvent" : "addEvent", {
             ...this.addForm,
           });
-          this.showModal = false;
+          // 有插槽情况需要到父组件校验
+          !slot && (this.showModal = false);
         }
       });
     },
