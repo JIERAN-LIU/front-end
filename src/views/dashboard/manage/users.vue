@@ -9,6 +9,7 @@
       />
     </div>
 
+    <p><SearchInput @search="key => refreshTable(1, key)" /></p>
     <el-table :data="tableData" style="width: 100%">
       <el-table-column :label="i.label" :prop="i.prop" v-for="i in formModal" :key="i.prop">
         <template slot-scope="scope">
@@ -28,8 +29,29 @@
             cancel-button-text='NO'
             style="margin-left: 10px"
             @confirm="handleDelete(scope.row)"
+            v-if="isAdmin"
           >
             <el-button slot="reference" size="mini" type="danger">DELETE</el-button>
+          </el-popconfirm>
+          <el-popconfirm
+            title="confirm to disabled?"
+            confirm-button-text='OK'
+            cancel-button-text='NO'
+            style="margin-left: 10px"
+            @confirm="disabledUser(scope.row)"
+            v-if="isLibrarian && scope.row.is_active"
+          >
+            <el-button slot="reference" size="mini" type="danger">DISABLED</el-button>
+          </el-popconfirm>
+          <el-popconfirm
+            title="confirm to enabled?"
+            confirm-button-text='OK'
+            cancel-button-text='NO'
+            style="margin-left: 10px"
+            @confirm="enabledUser(scope.row)"
+            v-if="isLibrarian && !scope.row.is_active"
+          >
+            <el-button slot="reference" size="mini" type="success">ENABLED</el-button>
           </el-popconfirm>
           <el-popconfirm
             title="confirm to reset password?"
@@ -38,7 +60,7 @@
             style="margin-left: 10px"
             @confirm="handleReset(scope.row)"
           >
-            <el-button slot="reference" size="mini" type="warning">RESER PASSWORD</el-button>
+            <el-button slot="reference" size="mini" type="warning">RESET PASSWORD</el-button>
           </el-popconfirm>
         </template>
       </el-table-column>
@@ -60,16 +82,17 @@ import { getUserPage, addUser, editUser, deleteUser, resetUser, getCollegePage }
 import AddModal from "@c/AddModal.vue";
 import { mapGetters } from 'vuex'
 import { LIBRARIAN, READER } from '../../../constant'
+import tableMixin from '../mixins/table.search'
 export default {
   name: "author",
+  mixins: [tableMixin],
   components: { AddModal },
   data() {
     return {
-      tableData: [],
-      total: 0,
       promotionPrice: '',
       collegeOptions: [],
-      activeUser: {}
+      activeUser: {},
+      searchKey: 'username'
     };
   },
   computed: {
@@ -146,8 +169,8 @@ export default {
   mounted() {},
   destroyed() {},
   methods: {
+    getPage: getUserPage,
     addEvent(data) {
-
       addUser({
         ...data,
         role: this.isAdmin ? LIBRARIAN : READER
@@ -160,13 +183,20 @@ export default {
         this.refreshTable();
       });
     },
-    refreshTable(pageNum = 1) {
-      getUserPage({
-        page: pageNum,
-      }).then((res) => {
-        const { count: total, results: list } = res;
-        this.total = total;
-        this.tableData = list;
+    disabledUser (data) {
+      editUser({
+        ...data,
+        is_active: false
+      }).then(() => {
+        this.refreshTable();
+      });
+    },
+    enabledUser (data) {
+      editUser({
+        ...data,
+        is_active: true
+      }).then(() => {
+        this.refreshTable();
       });
     },
     handleDelete(row) {

@@ -21,7 +21,6 @@ const store = new Vuex.Store({
     identity: user && user.role || READER
   },
   getters:{
-    // 参数列表state指的是state数据
     getBindingsOptions (state) {
       return getCommon('BINDINGS', state)
     },
@@ -45,6 +44,12 @@ const store = new Vuex.Store({
     },
     getRoleOptions (state) {
       return getCommon('ROLES', state)
+    },
+    getPayMethodsOptions (state) {
+      return getCommon('PAY_METHODS', state)
+    },
+    getCurrencySymbolsOptions (state) {
+      return getCommon('CURRENCY_SYMBOLS', state)
     },
     getIdentity (state) {
       return state.identity

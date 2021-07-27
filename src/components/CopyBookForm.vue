@@ -4,14 +4,15 @@
     :model="form"
     :rules="formRules"
     style="width: 100%"
+    v-loading="loading"
   >
     <el-form-item
       prop="copies"
     >
       <span slot="label">
         <span>copies</span>
-        <CopyModal @newCopy="newCopy">
-          <el-button slot-scope="{changeDisplay}" class="plus-btn" @click="changeDisplay"><i class="el-icon-plus"></i> New Copy</el-button>
+        <CopyModal ref="copyModal" @newCopy="newCopy">
+          <el-button class="plus-btn" @click="() => $refs.copyModal.showModalAction()"><i class="el-icon-plus"></i> New Copy</el-button>
         </CopyModal>
       </span>
       <el-table style="width: 100%" :data="form.copies">
@@ -31,13 +32,14 @@
         <el-table-column
           prop="media_type"
           label="media type"
-          width="155">
+          width="150">
         </el-table-column>
         <el-table-column
           label="Handle"
-          width="70">
+          width="140">
           <template slot-scope="scope">
-            <el-button @click="delCopy(scope.row)" type="danger">Del</el-button>
+            <el-button @click="delCopy(scope.row)" size="mini" type="danger">Del</el-button>
+            <el-button @click="() => $refs.copyModal.showModalAction(scope.row)" size="mini" type="primary">Edit</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -48,6 +50,7 @@
 
 <script>
 import CopyModal from './CopyModal'
+import { delCopy } from '@api'
 export default {
   components: {
     CopyModal
@@ -61,7 +64,8 @@ export default {
         copies: [
           { required: true, message: 'copy is required' }
         ]
-      }
+      },
+      loading: false
     };
   },
   props: {
@@ -86,7 +90,17 @@ export default {
       this.form.copies = copies
     },
     delCopy (row) {
-      this.form.copies = this.form.copies.filter(i => i !== row)
+      if (row.id) {
+        this.loading = true
+        delCopy(row.id).then(() => {
+          this.form.copies = this.form.copies.filter(i => i !== row)
+        }).finally(() => {
+          this.loading = false
+        })
+      } else {
+        this.form.copies = this.form.copies.filter(i => i !== row)
+      }
+      
     }
   },
 };

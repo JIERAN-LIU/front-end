@@ -8,7 +8,7 @@
         ref="modal"
       />
     </div>
-
+    <p><SearchInput @search="key => refreshTable(1, key)" /></p>
     <el-table :data="tableData" style="width: 100%">
       <el-table-column :label="i.label" :prop="i.prop" v-for="i in formModal" :key="i.prop">
         <template slot-scope="scope">
@@ -48,15 +48,14 @@
 
 <script>
 import { getPublisherPage, addPublisher, editPublisher, deletePublisher } from "@api";
-
+import tableMixin from '../mixins/table.search'
 import AddModal from "@c/AddModal.vue";
 export default {
   name: "author",
+  mixins: [tableMixin],
   components: { AddModal },
   data() {
     return {
-      tableData: [],
-      total: 0,
       formModal: [
         {
           label: 'Name',
@@ -91,7 +90,7 @@ export default {
           type: 'input'
         }
       ],
-      promotionPrice: ''
+      searchKey: 'name'
     };
   },
   watch: {},
@@ -101,6 +100,7 @@ export default {
   mounted() {},
   destroyed() {},
   methods: {
+    getPage: getPublisherPage,
     addEvent(data) {
       addPublisher(data).then(() => {
         this.refreshTable();
@@ -109,15 +109,6 @@ export default {
     editEvent (data) {
       editPublisher(data).then(() => {
         this.refreshTable();
-      });
-    },
-    refreshTable(pageNum = 1) {
-      getPublisherPage({
-        page: pageNum,
-      }).then((res) => {
-        const { count: total, results: list } = res;
-        this.total = total;
-        this.tableData = list;
       });
     },
     handleDelete(row) {

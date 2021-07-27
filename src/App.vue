@@ -34,4 +34,7 @@ body,
 .el-upload-list {
   display: none!important;;
 }
+.el-form-item__label, ::placeholder {
+  text-transform: capitalize;
+}
 </style>

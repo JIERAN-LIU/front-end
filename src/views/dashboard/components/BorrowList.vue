@@ -12,15 +12,19 @@
         <div>
           <el-card class="">
             <h4><router-link :to="'./book-detail/' + item.book_info.id">{{item.book_info.title}}</router-link></h4>
-            <p v-if="item.remain_days">
+            <p v-if="item.remain_days && !item.has_returned">
               <span>Remain Days: </span>
               <span class="remain-days"><vns :start="0" :end="item.remain_days" :times="4" :speed="100"/></span>
+            </p>
+            <p v-if="item.overdue_days && !item.has_returned">
+              <span>Overdue Days: </span>
+              <span class="overdue-days"><vns :start="0" :end="item.overdue_days" :times="4" :speed="100"/></span>
             </p>
             <p><span>Borrowed At: </span><span class="grey-item">{{timeFormat(item.borrowed_at)}}</span></p>
             <p v-if="item.returned_at"><span>Returned At: </span><span class="grey-item">{{timeFormat(item.returned_at)}}</span></p>
             <p class="handler-wrapper">
               <el-popconfirm
-                v-if="!item.has_returned && !item.has_renewed && !item.has_overdue"
+                v-if="!item.has_returned && !item.has_renewed && !item.has_overdue && $store.getters.isLibrarian"
                 title="Confirm to renew?"
                 confirm-button-text='OK'
                 cancel-button-text='NO'
@@ -29,34 +33,40 @@
               >
                 <el-button slot="reference" type="primary" size="mini">Renew</el-button>
               </el-popconfirm>
-              <el-popconfirm
-                v-if="!item.has_returned && $store.getters.isLibrarian"
-                title="Confirm to return?"
-                confirm-button-text='OK'
-                cancel-button-text='NO'
-                style="margin-left: 10px"
-                @confirm="handleReturn(item.id)"
-              >
-                <el-button slot="reference" type="success" size="mini">Return</el-button>
-              </el-popconfirm>
+              <template v-if="!item.has_returned && $store.getters.isLibrarian">
+                <el-button v-if="item.has_overdue && !item.has_fined" @click="showFineModal(item)" type="success" size="mini">Overdue</el-button>
+                <el-popconfirm
+                  v-else
+                  title="Confirm to return?"
+                  confirm-button-text='OK'
+                  cancel-button-text='NO'
+                  style="margin-left: 10px"
+                  @confirm="handleReturn(item.id)"
+                >
+                  <el-button slot="reference" type="success" size="mini">Return</el-button>
+                </el-popconfirm>
+              </template>
             </p>
           </el-card>
         </div>
       </el-timeline-item>
     </el-timeline>
+    <FineModal @fine="fineUpdate" ref="FineModal"/>
   </div>
 </template>
 
 <script>
-import { getBorrowList, renew, returnBook } from "@api";
+import { getBorrowList, renew, returnBook, fineUpdate } from "@api";
 import vns from "vue-number-scroll"
+import FineModal from './FineModal.vue'
 export default {
   name: "borrowList",
   props: {
     rid: Number
   },
   components: {
-    vns
+    vns,
+    FineModal
   },
   data() {
     return {
@@ -125,6 +135,20 @@ export default {
         this.page = 1
         this.getBorrowList()
       })
+    },
+    showFineModal ({ fine, id }) {
+      this.$refs.FineModal.show({
+        fine,
+        id
+      })
+    },
+    fineUpdate (form) {
+      fineUpdate(form).finally(() => {
+        this.borrowList = []
+        this.next = null
+        this.page = 1
+        this.getBorrowList()
+      })
     }
   }
 };
@@ -144,10 +168,13 @@ export default {
   padding-top: 10px;
   text-align: right;
 }
-.remain-days {
+.remain-days, .overdue-days {
   font-size: 16px;
   font-weight: 600;
   color: #409EFF
+}
+.overdue-days {
+  color: #f40
 }
 .grey-item {
   color: #aaa;

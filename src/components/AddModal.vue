@@ -4,7 +4,7 @@
     <el-dialog :title="isEdit ? 'EDIT' : 'ADD'" :custom-class="flex ? 'flex-dialog add-modal' : 'add-modal'" destroy-on-close :visible.sync="showModal" @open="open" @closed="closed">
       <el-form :class="flex ? 'flex-form' : ''" ref="addForm" :model="addForm" :rules="lazyAddRules" label-position="left" label-width="135px">
         <el-form-item :label="i.label" v-for="i in formModal" :key="i.prop" :prop="i.prop">
-          <el-input v-if="i.type === 'input'" :ref="i.prop" v-model="addForm[i.prop]" :placeholder="i.label" @blur="addForm[i.prop] = addForm[i.prop].trim()" :type="i.attrs && i.attrs.type" />
+          <el-input v-if="i.type === 'input'" :ref="i.prop" v-model="addForm[i.prop]" :placeholder="i.label" @blur="addForm[i.prop] = addForm[i.prop] && addForm[i.prop].trim()" :type="i.attrs && i.attrs.type" />
           <el-input v-if="i.type === 'pic'" :ref="i.prop" v-model="addForm[i.prop]" :placeholder="i.label" :type="i.attrs && i.attrs.type">
             <template slot="append">
               <el-upload class="upload-demo" accept=".png, .jpg, .jpeg" :on-success="res => uploadSuccess(res, i)" :headers="{ Authorization: auth }" :action="actionUrl">

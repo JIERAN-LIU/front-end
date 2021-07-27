@@ -46,9 +46,13 @@ export default {
   padding: 10px;
 }
 .rest-info {
-  flex: 1;
-  margin-left: 10px;
+  width: 140px;
   position: relative;
+}
+.rest-info > * {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .a-avatar-wrapper {
   height: 200px;
@@ -57,6 +61,11 @@ export default {
   text-align: center;
   line-height: 150px;
   font-size: 0;
+}
+.a-avatar {
+  max-height: 200px;
+  max-width: 140px;
+  vertical-align: middle;
 }
 
 .a-tit {
@@ -85,7 +94,7 @@ export default {
 
 
 .link-item + .link-item {
-  margin-left: 20px;
+  margin-left: 10px;
 }
 
 </style>

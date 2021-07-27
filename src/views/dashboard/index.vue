@@ -31,7 +31,7 @@
               <el-menu-item v-if="isLibrarian" index="book"><i class="el-icon-collection"></i> Book </el-menu-item>
               <el-menu-item v-if="isLibrarian" index="author"><i class="el-icon-user"></i> Author </el-menu-item>
               <el-menu-item v-if="isLibrarian" index="publisher"><i class="el-icon-office-building"></i> Publisher </el-menu-item>
-              <el-menu-item v-if="isAdmin || isLibrarian" index="users"><i class="el-icon-user"></i> Users </el-menu-item>
+              <el-menu-item v-if="isAdmin || isLibrarian" index="users"><i class="el-icon-user"></i> {{userRouteName}} </el-menu-item>
               <el-menu-item v-if="isAdmin" index="college"><i class="el-icon-school"></i> Faculty </el-menu-item>
             </el-submenu>
           </el-menu>
@@ -42,13 +42,16 @@
       </div>
     </div>
 
-    <el-dialog title="Modify Password" :visible.sync="showModal" width="400px">
-      <el-form ref="form" :rules="rules" :model="form" label-width="120px">
+    <el-dialog title="Modify Password" :visible.sync="showModal" width="450px">
+      <el-form ref="form" :rules="rules" :model="form" label-width="150px">
         <el-form-item prop="oldPwd" label="Old Password">
           <el-input show-password v-model="form.oldPwd"></el-input>
         </el-form-item>
         <el-form-item prop="newPwd" label="New Password">
           <el-input show-password v-model="form.newPwd"></el-input>
+        </el-form-item>
+        <el-form-item prop="cNewPwd" label="Confirm password">
+          <el-input show-password v-model="form.cNewPwd"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -75,6 +78,7 @@ export default {
       form: {
         oldPwd: "",
         newPwd: "",
+        cNewPwd: ""
       },
       rules: {
         oldPwd: [
@@ -91,11 +95,28 @@ export default {
             trigger: "blur",
           },
         ],
+        cNewPwd: [
+          {
+            required: true,
+            message: "confirm password is required",
+            trigger: "blur",
+          },
+          {
+            validator: (rule, value, callback) => callback(value === this.form.newPwd ? undefined : new Error('password is inconsistent!')),
+            trigger: 'blur' 
+          }
+        ],
       },
     };
   },
   computed: {
     ...mapGetters(['isAdmin', 'getUserInfo', 'isReader', 'isLibrarian']),
+    userRouteName () {
+      if (this.isAdmin) {
+        return 'Librarians'
+      }
+      return 'Readers'
+    }
   },
   watch: {
     $route: {
@@ -123,6 +144,7 @@ export default {
     logout() {
       logout().then(() => {
         localStorage.removeItem("user");
+        localStorage.removeItem("Authorization");
         return this.$router.push("/login");
       });
     },

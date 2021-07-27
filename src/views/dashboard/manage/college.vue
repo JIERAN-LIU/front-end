@@ -8,7 +8,7 @@
         ref="modal"
       />
     </div>
-
+    <p><SearchInput @search="key => refreshTable(1, key)" /></p>
     <el-table :data="tableData" style="width: 100%">
       <el-table-column :label="i.label" :prop="i.prop" v-for="i in formModal" :key="i.prop">
         <template slot-scope="scope">
@@ -46,15 +46,14 @@
 
 <script>
 import { getCollegePage, addCollege, editCollege, deleteCollege } from "@api";
-
 import AddModal from "@c/AddModal.vue";
+import tableMixin from '../mixins/table.search'
 export default {
   name: "author",
+  mixins: [tableMixin],
   components: { AddModal },
   data() {
     return {
-      tableData: [],
-      total: 0,
       formModal: [
         {
           label: 'Name',
@@ -65,7 +64,7 @@ export default {
           type: 'input'
         }
       ],
-      promotionPrice: ''
+      searchKey: 'name'
     };
   },
   watch: {},
@@ -75,6 +74,7 @@ export default {
   mounted() {},
   destroyed() {},
   methods: {
+    getPage: getCollegePage,
     addEvent(data) {
       addCollege(data).then(() => {
         this.refreshTable();
@@ -83,15 +83,6 @@ export default {
     editEvent (data) {
       editCollege(data).then(() => {
         this.refreshTable();
-      });
-    },
-    refreshTable(pageNum = 1) {
-      getCollegePage({
-        page: pageNum,
-      }).then((res) => {
-        const { count: total, results: list } = res;
-        this.total = total;
-        this.tableData = list;
       });
     },
     handleDelete(row) {

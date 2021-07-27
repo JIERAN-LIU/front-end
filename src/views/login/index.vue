@@ -50,8 +50,7 @@
           />
         </el-form-item>
       </el-tooltip>
-      
-
+      <!--<p class="fp" @click="startFp">Forget password</p>-->
       <el-button
         :loading="loading"
         type="primary"
@@ -160,12 +159,14 @@ export default {
               cancelButtonText: 'Cancel',
               type: 'warning'
             }).then(() => {
-              forgetPassword({ account: this.loginForm.account }).then(data => {
+              forgetPassword({ username: this.loginForm.account }).then(data => {
                 if (!data.error) {
-                  this.$message({
-                    message: 'success!',
-                    type: 'success',
-                    duration: 1.5 * 1000
+                  setTimeout(() => {
+                    this.$message({
+                      message: data.detail,
+                      type: 'success',
+                      duration: 1.5 * 1000
+                    }, 200)
                   })
                 }
               })

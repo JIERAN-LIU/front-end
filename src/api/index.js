@@ -11,7 +11,7 @@ const request = axios.create({
 request.interceptors.request.use((config) => {
   //比如是否需要设置 token
   // debugger
-  if (config.url === '/user/login') {
+  if (config.url === '/user/login' && config.method === 'post') {
     config.headers['Authorization'] = `Basic ${btoa(config.data.username + ':' + config.data.password)}`
   } else {
     const auth = localStorage.getItem('Authorization')
@@ -68,6 +68,13 @@ request.interceptors.response.use(
       })
     }
 
+    if (response.config.method !== 'get') {
+      Message({
+        message: 'success',
+        type: 'success',
+        duration: 1 * 1000
+      })
+    }
 
     return res
   },
@@ -76,7 +83,7 @@ request.interceptors.response.use(
     if (response && response.data) {
       try {
         Message({
-          message: Object.keys(response.data).map(i => `${i}: ${response.data[i]}`).join('\n'),
+          message: typeof response.data === 'object' ? Object.keys(response.data).map(i => `${i}: ${response.data[i]}`).join('\n') : response.data.toString(),
           type: 'error',
           duration: 2 * 1000
         })
@@ -167,11 +174,11 @@ export function modifyPassword (data) {
   })
 }
 
-export function forgetPassword (params) {
+export function forgetPassword (data) {
   return request({
-    url: '/api/user/pwd/reset',
-    method: 'post',
-    params
+    url: '/user/login',
+    method: 'put',
+    data
   })
 }
 
@@ -386,6 +393,16 @@ export function returnBook(id) {
   })
 }
 
+export function fineUpdate(data) {
+  const id = data.id
+  delete data.id
+  return request({
+    url: `/fine/${id}/`,
+    method: 'put',
+    data
+  })
+}
+
 export function borrowBook(data) {
   return request({
     url: '/borrow/',
@@ -413,6 +430,23 @@ export function createCopy(data) {
   return request({
     url: '/copy/',
     method: 'post',
+    data
+  })
+}
+
+export function delCopy(id) {
+  return request({
+    url: `/copy/${id}/`,
+    method: 'delete'
+  })
+}
+
+export function updateCopy(data) {
+  const id = data.id
+  delete data.id
+  return request({
+    url: `/copy/${id}/`,
+    method: 'put',
     data
   })
 }

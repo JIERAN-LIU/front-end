@@ -8,7 +8,7 @@
         ref="modal"
       />
     </div>
-
+    <p><SearchInput @search="key => refreshTable(1, key)" /></p>
     <div class="content-wrapper">
       <AuthorItem v-for="i in tableData" @showDetail="showDetail(i)" @onEdit="handleEdit(i)" @onDelete="handleDelete(i)" :author="i" :key="i.id"/>
       <p class="page-nation">
@@ -28,16 +28,17 @@ import { mapGetters } from 'vuex'
 import AddModal from "@c/AddModal.vue";
 import AuthorItem from "@c/AuthorItem.vue"
 import AuthorDetailModal from "@c/AuthorDetailModal.vue"
+import tableMixin from '../mixins/table.search'
 export default {
   name: "author",
+  mixins: [tableMixin],
   components: { AddModal, AuthorItem, AuthorDetailModal },
   data() {
     return {
-      tableData: [],
-      total: 0,
       activeAuthor: null,
       detailShow: false,
-      promotionPrice: ''
+      promotionPrice: '',
+      searchKey: 'name'
     };
   },
   computed: {
@@ -120,6 +121,7 @@ export default {
   mounted() {},
   destroyed() {},
   methods: {
+    getPage: getAuthorPage,
     addEvent(data) {
       addAuthor(data).then(() => {
         this.refreshTable();
@@ -128,15 +130,6 @@ export default {
     editEvent (data) {
       editAuthor(data).then(() => {
         this.refreshTable();
-      });
-    },
-    refreshTable(pageNum = 1) {
-      getAuthorPage({
-        page: pageNum,
-      }).then((res) => {
-        const { count: total, results: list } = res;
-        this.total = total;
-        this.tableData = list;
       });
     },
     handleDelete(row) {

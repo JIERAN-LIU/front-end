@@ -1,8 +1,8 @@
 <template>
   <span>
-    <slot :change-display="() => showModal = true"></slot>
+    <slot></slot>
     <el-dialog
-      title="Add Copy"
+      :title="this.originData ? 'Edit Copy' : 'Add Copy'"
       destroy-on-close
       append-to-body
       :visible.sync="showModal"
@@ -16,14 +16,14 @@
         label-position="left"
         label-width="150px"
       >
-        <el-form-item
+        <!-- <el-form-item
           label="status"
           prop="status"
         >
           <el-select v-model="form.status">
             <el-option v-for="s in getBookStatus" :key="s.value" :label="s.label" :value="s.value"></el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item
           label="location"
           prop="location"
@@ -73,18 +73,19 @@ export default {
       mediaTypes: [],
       status: [],
       form: {
-        status: '',
+        // status: '',
         location: '',
         section: '',
         media_type: ''
       },
       formRules: {
-        status: [ { required: true, message: 'status is required', trigger: 'change' } ],
+        // status: [ { required: true, message: 'status is required', trigger: 'change' } ],
         location: [ { required: true, message: 'location is required', trigger: 'change' } ],
         section: [ { required: true, message: 'section is required', trigger: 'change' } ],
         media_type: [ { required: true, message: 'media type is required', trigger: 'change' } ]
       },
-      showModal: false
+      showModal: false,
+      originData: null
     };
   },
   props: {
@@ -96,6 +97,13 @@ export default {
   },
 
   methods: {
+    showModalAction (row) {
+      if (row) {
+        this.form = {...row}
+        this.originData = row
+      }
+      this.showModal = true
+    },
     open() {
       console.log(111)
     },
@@ -114,7 +122,12 @@ export default {
       this.$refs.form.validate((val) => {
         if (val) {
           this.showModal = false
-          this.$emit('newCopy', {...this.form})
+          if (this.originData) {
+            Object.assign(this.originData, this.form)
+          }else {
+            this.$emit('newCopy', {...this.form})
+          }
+          this.originData = null
         }
       });
     },

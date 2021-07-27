@@ -230,8 +230,16 @@ export default {
         this.refreshTable();
       });
     },
-    editEvent (data) {
-      editBook(data).then(() => {
+    async editEvent (data) {
+      const copies = await this.$refs.copyForm.getCopy()
+      this.$refs.modal.close()
+      editBook({
+        ...data,
+        copies: copies.map(i => {
+          i.book = data.id
+          return i
+        })
+      }).then(() => {
         this.refreshTable();
       });
     },
@@ -252,12 +260,14 @@ export default {
       this.$refs.modal.edit(info, [() => {
         this.activeBook = {}
       }])
+      this.$refs.copyForm.loading = true
       getCopyPage({
         book: row.id
       }).then(res => {
         this.$refs.copyForm.setCopy(res.results)
+      }).finally(() => {
+        this.$refs.copyForm.loading = false
       })
-
     },
     showDetail () {
 
