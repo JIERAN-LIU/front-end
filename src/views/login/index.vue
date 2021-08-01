@@ -49,7 +49,9 @@
             @keyup.enter.native="handleLogin"
           />
         </el-form-item>
-      </el-tooltip><p class="fp" @click="startFp">Forget password</p>
+      </el-tooltip>
+      <p class="fp" @click="startFp">Forget password</p>
+
       <el-button
         :loading="loading"
         type="primary"
